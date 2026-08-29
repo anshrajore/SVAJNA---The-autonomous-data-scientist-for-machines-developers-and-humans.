@@ -1,0 +1,14 @@
+{
+  "name": "svajna",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SVAJNA — autonomous data science with verifiable execution",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build -w @svajna/core && npm run build -w @svajna/cli",
+    "test": "npm run test -w @svajna/core && npm run test -w @svajna/cli",
+    "lint": "npm run build -w @svajna/core && npm run lint -w @svajna/core && npm run lint -w @svajna/cli"
+  },
+  "engines": { "node": ">=20" },
+  "devDependencies": { "typescript": "^5.7.3", "@types/node": "^22.10.5" }
+}
