@@ -1,0 +1,3 @@
+export interface ApprovalRequest { id: string; action: string; requestedAt: string; status: "pending" | "approved" | "rejected"; resolvedAt?: string; }
+export function requestApproval(id: string, action: string, now = new Date()): ApprovalRequest { return { id, action, requestedAt: now.toISOString(), status: "pending" }; }
+export function resolveApproval(request: ApprovalRequest, approved: boolean, now = new Date()): ApprovalRequest { if (request.status !== "pending") throw new Error("Approval has already been resolved."); return { ...request, status: approved ? "approved" : "rejected", resolvedAt: now.toISOString() }; }
