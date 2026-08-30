@@ -22,6 +22,7 @@ export * from "./memory.js";
 export * from "./sql.js";
 export * from "./artifact.js";
 export * from "./experiment.js";
+export * from "./lineage.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 

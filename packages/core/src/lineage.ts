@@ -1,0 +1,2 @@
+export interface LineageRecord { output: string; inputs: string[]; operation: string; runId: string; }
+export function traceUpstream(records: LineageRecord[], output: string): string[] { const seen = new Set<string>(); const visit = (value: string) => records.filter((r) => r.output === value).forEach((r) => r.inputs.forEach((input) => { if (!seen.has(input)) { seen.add(input); visit(input); } })); visit(output); return [...seen]; }
