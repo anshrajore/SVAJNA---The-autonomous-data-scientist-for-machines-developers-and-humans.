@@ -25,6 +25,7 @@ export * from "./experiment.js";
 export * from "./lineage.js";
 export * from "./sample.js";
 export * from "./rules.js";
+export * from "./redact.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
