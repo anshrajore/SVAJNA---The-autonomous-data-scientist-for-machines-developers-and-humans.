@@ -1,0 +1,2 @@
+const blocked = /\b(insert|update|delete|drop|alter|create|grant|revoke|truncate)\b/i;
+export function validateReadOnlySql(query: string): { valid: boolean; reason?: string } { const normalized = query.trim(); if (!/^(select|with)\b/i.test(normalized)) return { valid: false, reason: "Only SELECT or WITH queries are permitted." }; if (blocked.test(normalized)) return { valid: false, reason: "Write or DDL keywords are not permitted." }; return { valid: true }; }
