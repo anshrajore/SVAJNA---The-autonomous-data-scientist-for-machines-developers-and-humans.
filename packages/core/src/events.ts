@@ -1,0 +1,2 @@
+export interface DomainEvent<T = unknown> { id: string; type: string; occurredAt: string; payload: T; }
+export class EventStore { private readonly events: DomainEvent[] = []; append<T>(type: string, payload: T, now = new Date()): DomainEvent<T> { const event = { id: `${type}_${this.events.length + 1}`, type, occurredAt: now.toISOString(), payload }; this.events.push(event); return event; } list(type?: string) { return this.events.filter((event) => !type || event.type === type); } }
