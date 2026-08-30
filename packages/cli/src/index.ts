@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { access, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { analyze } from "@svajna/core";
+import { analyze, loadConfig } from "@svajna/core";
 
 const [command, argument] = process.argv.slice(2);
 
 function usage(): void {
-  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna report");
+  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna report\n  svajna status");
 }
 
 async function main(): Promise<void> {
@@ -29,6 +29,14 @@ async function main(): Promise<void> {
     catch { throw new Error("No analysis has been run. Use: svajna analyze <file>"); }
     const memory = JSON.parse(await readFile(memoryPath, "utf8")) as { latestRun: string };
     console.log(`Latest report: .svajna/reports/${memory.latestRun}.md`);
+    return;
+  }
+  if (command === "status") {
+    const config = await loadConfig();
+    const memoryPath = join(process.cwd(), ".svajna", "memory.json");
+    let latestRun = "none";
+    try { latestRun = (JSON.parse(await readFile(memoryPath, "utf8")) as { latestRun: string }).latestRun; } catch { /* no state */ }
+    console.log(`Project: ${config.projectName}\nAutonomy: ${config.autonomy}\nMonitoring: ${config.monitoring.enabled ? config.monitoring.sensitivity : "disabled"}\nLatest run: ${latestRun}`);
     return;
   }
   throw new Error(`Unknown command '${command}'.`);
