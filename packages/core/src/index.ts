@@ -12,6 +12,7 @@ export * from "./statistics.js";
 export * from "./anomaly.js";
 export * from "./compare.js";
 export * from "./validation.js";
+export * from "./policy.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
