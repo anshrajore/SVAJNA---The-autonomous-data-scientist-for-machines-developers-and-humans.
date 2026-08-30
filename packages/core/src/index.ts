@@ -5,6 +5,7 @@ import { profileDataset } from "./profile.js";
 import type { AnalysisEvent, AnalysisRun, DatasetProfile } from "./types.js";
 
 export * from "./types.js";
+export * from "./config.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
