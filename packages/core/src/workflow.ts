@@ -1,0 +1,2 @@
+export interface WorkflowStep { id: string; dependsOn?: string[]; }
+export function topologicalPlan(steps: WorkflowStep[]): string[] { const remaining = new Map(steps.map((step) => [step.id, new Set(step.dependsOn ?? [])])); const plan: string[] = []; while (remaining.size) { const ready = [...remaining.entries()].filter(([, needs]) => [...needs].every((id) => plan.includes(id))).map(([id]) => id); if (!ready.length) throw new Error("Workflow has circular or missing dependencies."); ready.forEach((id) => { plan.push(id); remaining.delete(id); }); } return plan; }

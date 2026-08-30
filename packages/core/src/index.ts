@@ -14,6 +14,7 @@ export * from "./compare.js";
 export * from "./validation.js";
 export * from "./policy.js";
 export * from "./approval.js";
+export * from "./workflow.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
