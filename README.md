@@ -12,6 +12,7 @@ npm run build
 node packages/cli/dist/index.js init
 node packages/cli/dist/index.js analyze ./sales.csv
 node packages/cli/dist/index.js report
+node packages/cli/dist/index.js status
 ```
 
 Analysis never changes the source dataset. It writes reproducible state to `.svajna/`.
@@ -24,6 +25,8 @@ Build first, then configure an MCP client to launch the local, project-bounded s
 node /absolute/path/to/SVAJNA/packages/mcp/dist/index.js
 ```
 
-The server provides `data_profile`, `analysis_execute`, and `memory_read`, plus a `svajna://capabilities` resource. Dataset paths must be relative to the MCP server's working directory; paths outside that project are rejected.
+The server provides `data_profile`, `data_compare`, `analysis_execute`, and `memory_read`, plus a `svajna://capabilities` resource. Dataset paths must be relative to the MCP server's working directory; paths outside that project are rejected.
+
+The advanced runtime primitives and continuation plan are recorded in [docs/architecture.md](./docs/architecture.md) and [AGENT_HANDOFF.md](./AGENT_HANDOFF.md).
 
 See [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) for the current phase, dependency list, and continuation notes.
