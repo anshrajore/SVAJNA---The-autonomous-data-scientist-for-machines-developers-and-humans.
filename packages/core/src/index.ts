@@ -20,6 +20,7 @@ export * from "./monitor.js";
 export * from "./incident.js";
 export * from "./memory.js";
 export * from "./sql.js";
+export * from "./artifact.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
