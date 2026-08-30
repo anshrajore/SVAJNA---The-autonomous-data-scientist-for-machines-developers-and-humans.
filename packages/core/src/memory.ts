@@ -1,0 +1,3 @@
+export interface MemoryNode { id: string; type: "dataset" | "run" | "report" | "incident"; label: string; }
+export interface MemoryEdge { from: string; to: string; relation: string; }
+export class AnalyticalMemory { readonly nodes = new Map<string, MemoryNode>(); readonly edges: MemoryEdge[] = []; add(node: MemoryNode) { this.nodes.set(node.id, node); } link(from: string, to: string, relation: string) { if (!this.nodes.has(from) || !this.nodes.has(to)) throw new Error("Memory links require known nodes."); this.edges.push({ from, to, relation }); } related(id: string) { return this.edges.filter((edge) => edge.from === id || edge.to === id); } }
