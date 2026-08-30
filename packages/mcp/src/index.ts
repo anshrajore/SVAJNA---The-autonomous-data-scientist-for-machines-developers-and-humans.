@@ -4,7 +4,7 @@ import { relative, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { analyze, loadDataset, profileDataset } from "@svajna/core";
+import { analyze, compareSchemas, loadDataset, profileDataset } from "@svajna/core";
 import { z } from "zod";
 
 const projectRoot = resolve(process.cwd());
@@ -48,6 +48,22 @@ export function createServer(): McpServer {
       } catch (error) {
         return { content: [{ type: "text" as const, text: error instanceof Error ? error.message : String(error) }], isError: true };
       }
+    },
+  );
+
+  server.registerTool(
+    "data_compare",
+    {
+      title: "Compare two local dataset schemas",
+      description: "Read two CSV or JSON datasets inside the project and report added, removed, or type-changed fields.",
+      inputSchema: { before: z.string(), after: z.string() },
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ before, after }) => {
+      try {
+        const [left, right] = await Promise.all([loadDataset(projectFile(before)), loadDataset(projectFile(after))]);
+        return text(compareSchemas(profileDataset(before, left.format, left.rows), profileDataset(after, right.format, right.rows)));
+      } catch (error) { return { content: [{ type: "text" as const, text: error instanceof Error ? error.message : String(error) }], isError: true }; }
     },
   );
 
