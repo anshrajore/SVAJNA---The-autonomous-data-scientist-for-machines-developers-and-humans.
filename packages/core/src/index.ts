@@ -17,6 +17,7 @@ export * from "./approval.js";
 export * from "./workflow.js";
 export * from "./events.js";
 export * from "./monitor.js";
+export * from "./incident.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
