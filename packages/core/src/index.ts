@@ -9,6 +9,7 @@ export * from "./config.js";
 export * from "./fingerprint.js";
 export * from "./connector.js";
 export * from "./statistics.js";
+export * from "./anomaly.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
