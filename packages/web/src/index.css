@@ -1,0 +1,50 @@
+:root {
+  --bg-outer: #18191c;
+  --bg-container: #ebebeb;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --accent-black: #09090b;
+  --card-dark: #0f172a;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-outer);
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 1200px;
+  background: var(--bg-container);
+  border-radius: 32px;
+  padding: 40px 52px 64px 52px;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-sans);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
