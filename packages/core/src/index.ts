@@ -30,6 +30,7 @@ export * from "./store.js";
 export * from "./store-json.js";
 export * from "./events-durable.js";
 export * from "./memory-durable.js";
+export * from "./workflow-durable.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
