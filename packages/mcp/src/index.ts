@@ -99,6 +99,31 @@ export function createServer(): McpServer {
     },
   );
 
+  server.registerTool(
+    "pipeline_execute",
+    {
+      title: "Execute a multi-step analytical pipeline",
+      description: "Run a multi-step pipeline (profile, validate, report) on a project-local CSV or JSON dataset.",
+      inputSchema: { source: z.string().describe("Project-relative path to dataset.") },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ source }) => {
+      try {
+        const absolute = projectFile(source);
+        const { PipelineEngine } = await import("@svajna/core");
+        const pipe = new PipelineEngine([
+          { name: "profile", type: "profile" },
+          { name: "validate", type: "validate" },
+          { name: "report", type: "report" },
+        ]);
+        const res = await pipe.execute(absolute);
+        return text(res);
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: error instanceof Error ? error.message : String(error) }], isError: true };
+      }
+    },
+  );
+
   server.registerPrompt(
     "review_analysis",
     { description: "A reusable prompt for evidence-based review of a SVAJNA analysis run.", argsSchema: { question: z.string().describe("The analytical question to review.") } },
