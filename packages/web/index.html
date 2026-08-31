@@ -6,16 +6,17 @@
   <title>Hanzo — Product Designer & Autonomous AI Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #e5e5e5;
-      --card-bg: #f3f3f3;
+      --bg-outer: #333333;
+      --bg-inner: #dedede;
+      --card-inner: #e6e6e6;
       --text-main: #111111;
       --text-muted: #666666;
       --pill-bg: #000000;
       --pill-text: #ffffff;
-      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
       --font-sans: 'Inter', -apple-system, sans-serif;
     }
 
@@ -26,7 +27,9 @@
     }
 
     body {
-      background-color: var(--bg-color);
+      background-color: var(--bg-outer);
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
       color: var(--text-main);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -38,31 +41,33 @@
 
     .container {
       width: 100%;
-      max-width: 1100px;
-      background: #ededed;
-      border-radius: 24px;
-      padding: 40px 40px 60px 40px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+      max-width: 1120px;
+      background: var(--bg-inner);
+      border-radius: 28px;
+      padding: 36px 48px 60px 48px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
       position: relative;
+      overflow: hidden;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 80px;
+      margin-bottom: 70px;
     }
 
     .logo {
       font-family: var(--font-serif);
-      font-size: 24px;
-      font-weight: 400;
+      font-size: 22px;
+      font-weight: 500;
+      font-style: italic;
       letter-spacing: -0.5px;
     }
 
     .menu-btn {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       background: #ffffff;
       display: flex;
@@ -72,6 +77,12 @@
       gap: 4px;
       cursor: pointer;
       border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .menu-btn:hover {
+      transform: scale(1.05);
     }
 
     .menu-btn span {
@@ -83,38 +94,39 @@
 
     .hero {
       text-align: center;
-      max-width: 800px;
-      margin: 0 auto 60px auto;
+      max-width: 820px;
+      margin: 0 auto 50px auto;
     }
 
     .hero-title {
       font-family: var(--font-serif);
-      font-size: 72px;
-      line-height: 1.1;
+      font-size: 76px;
+      line-height: 1.12;
       font-weight: 400;
       color: var(--text-main);
-      margin-bottom: 24px;
+      margin-bottom: 28px;
       letter-spacing: -1px;
     }
 
     .avatar-inline {
       display: inline-block;
       vertical-align: middle;
-      width: 52px;
-      height: 52px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       object-fit: cover;
-      margin: 0 6px;
+      margin: 0 4px;
       border: 2px solid #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      transform: translateY(-4px);
     }
 
     .hero-subtitle {
-      font-size: 15px;
+      font-size: 14px;
       color: var(--text-muted);
       max-width: 480px;
       margin: 0 auto 32px auto;
-      line-height: 1.5;
+      line-height: 1.6;
       font-weight: 400;
     }
 
@@ -127,9 +139,11 @@
       padding: 12px 24px;
       border-radius: 30px;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
+      letter-spacing: 0.2px;
       transition: transform 0.2s ease, background 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
 
     .cta-btn:hover {
@@ -141,40 +155,101 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
-      margin-top: 40px;
+      margin-top: 30px;
     }
 
-    .card {
-      background: #1a1d24;
-      border-radius: 16px;
+    .mockup-card {
+      background: #0d0f12;
+      border-radius: 20px;
       padding: 24px;
       color: #fff;
-      min-height: 280px;
+      min-height: 320px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.3s ease;
     }
 
-    .card-title {
-      font-size: 24px;
+    .mockup-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .mockup-screen {
+      background: #181b20;
+      border-radius: 12px;
+      height: 180px;
+      width: 100%;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .mockup-screen.blue-glow {
+      background: radial-gradient(circle at 80% 20%, #1e40af 0%, #0f172a 70%);
+    }
+
+    .mockup-title {
+      font-size: 20px;
       font-weight: 600;
-      margin-bottom: 8px;
+      color: #ffffff;
+      margin-bottom: 6px;
     }
 
-    .card-desc {
-      font-size: 14px;
+    .mockup-desc {
+      font-size: 13px;
       color: #9aa0a6;
+      line-height: 1.4;
     }
+
+    /* Interactive Data Analysis Terminal Component */
+    .terminal-widget {
+      width: 100%;
+      background: #090a0f;
+      border-radius: 16px;
+      padding: 20px;
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 13px;
+      margin-top: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .terminal-header {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .red { background: #ef4444; }
+    .yellow { background: #f59e0b; }
+    .green { background: #10b981; }
 
     @media (max-width: 768px) {
       .hero-title {
-        font-size: 44px;
+        font-size: 46px;
       }
       .cards-grid {
         grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 24px;
       }
     }
   </style>
@@ -183,7 +258,7 @@
   <div class="container">
     <header>
       <div class="logo">Hanzo</div>
-      <div class="menu-btn">
+      <div class="menu-btn" onclick="alert('Hanzo Portfolio & SVAJNA Navigation Menu')">
         <span></span>
         <span></span>
       </div>
@@ -212,19 +287,48 @@
     </main>
 
     <section class="cards-grid" id="projects">
-      <div class="card">
+      <div class="mockup-card">
+        <div class="mockup-screen">
+          <div style="font-size: 13px; color: #a1a1aa; text-align: center;">
+            <div style="font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 4px;">SVAJNA Core Engine</div>
+            Deterministic profiling & quality scoring
+          </div>
+        </div>
         <div>
-          <h2 class="card-title">SVAJNA Engine</h2>
-          <p class="card-desc">Autonomous Data Scientist with Verifiable Execution</p>
+          <h2 class="mockup-title">Autonomous Data Scientist</h2>
+          <p class="mockup-desc">Verifiable execution, bounded autonomy, & local-first analytical memory.</p>
         </div>
       </div>
-      <div class="card" style="background: linear-gradient(135deg, #0d1b2a, #1b263b);">
+
+      <div class="mockup-card">
+        <div class="mockup-screen blue-glow">
+          <div style="font-size: 13px; color: #93c5fd; text-align: center;">
+            <div style="font-size: 18px; color: #fff; font-weight: 600; margin-bottom: 4px;">AI-Powered Workflow</div>
+            Integration Systems & Pipelines
+          </div>
+        </div>
         <div>
-          <h2 class="card-title">AI-Powered Workflow</h2>
-          <p class="card-desc">Integration Systems & Bounded Autonomy</p>
+          <h2 class="mockup-title">Pipeline & MCP Server</h2>
+          <p class="mockup-desc">Standardized MCP protocol integration with real-time audit logging.</p>
         </div>
       </div>
     </section>
+
+    <!-- Terminal Widget to demonstrate live SVAJNA features -->
+    <div class="terminal-widget">
+      <div class="terminal-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div><span style="color: #4ade80;">svajna@local:~$</span> svajna status</div>
+      <div style="color: #94a3b8; margin-top: 4px;">
+        Project: SVAJNA project<br>
+        Autonomy: 1 (Bounded)<br>
+        Monitoring: Enabled (High Sensitivity)<br>
+        Latest run: run_20260831023501070_i6q5lp (Quality: 100/100)
+      </div>
+    </div>
   </div>
 </body>
 </html>

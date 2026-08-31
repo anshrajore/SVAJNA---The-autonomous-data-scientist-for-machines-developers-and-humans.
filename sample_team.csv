@@ -1,0 +1,6 @@
+id,name,role,salary,department
+1,Alice,Data Scientist,120000,AI
+2,Bob,Software Engineer,110000,Engineering
+3,Charlie,Product Designer,105000,Design
+4,David,ML Engineer,130000,AI
+5,Eve,Data Analyst,95000,Analytics
