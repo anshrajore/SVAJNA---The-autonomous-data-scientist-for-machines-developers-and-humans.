@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { access, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { analyze, loadConfig } from "@svajna/core";
+import { analyze, loadConfig, PipelineEngine } from "@svajna/core";
 
 const [command, argument] = process.argv.slice(2);
 
 function usage(): void {
-  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna report\n  svajna status");
+  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna pipeline <data.csv|data.json>\n  svajna report\n  svajna status");
 }
 
 async function main(): Promise<void> {
@@ -21,6 +21,17 @@ async function main(): Promise<void> {
     if (!argument) throw new Error("Provide a CSV or JSON file: svajna analyze ./data.csv");
     const run = await analyze(argument);
     console.log(`Analysis complete: ${run.id}\nRows: ${run.profile.rowCount}\nColumns: ${run.profile.columns.length}\nQuality: ${run.profile.quality.score}/100\nReport: ${run.reportPath}`);
+    return;
+  }
+  if (command === "pipeline") {
+    if (!argument) throw new Error("Provide a CSV or JSON file: svajna pipeline ./data.csv");
+    const pipe = new PipelineEngine([
+      { name: "profile", type: "profile" },
+      { name: "validate", type: "validate" },
+      { name: "report", type: "report" },
+    ]);
+    const res = await pipe.execute(argument);
+    console.log(`Pipeline executed: ${res.id}\nSource: ${res.source}\nSteps completed: ${res.stepsCompleted.join(", ")}\nQuality score: ${res.profile.quality.score}/100`);
     return;
   }
   if (command === "report") {
