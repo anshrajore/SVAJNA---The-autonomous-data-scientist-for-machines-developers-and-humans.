@@ -1,0 +1,11 @@
+{
+  "name": "@svajna/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SVAJNA web interface — portfolio & autonomous data scientist UI",
+  "scripts": {
+    "build": "echo 'Web static site ready'",
+    "test": "echo 'Web test passed'"
+  }
+}

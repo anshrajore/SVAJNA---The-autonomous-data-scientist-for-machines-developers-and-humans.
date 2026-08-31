@@ -5,7 +5,7 @@
   "description": "SVAJNA — autonomous data science with verifiable execution",
   "workspaces": ["packages/*"],
   "scripts": {
-    "build": "npm run build -w @svajna/core && npm run build -w @svajna/cli && npm run build -w @svajna/mcp",
+    "build": "npm run build -w @svajna/core && npm run build -w @svajna/cli && npm run build -w @svajna/mcp && npm run build -w @svajna/web",
     "test": "npm run test -w @svajna/core && npm run test -w @svajna/cli && npm run test -w @svajna/mcp",
     "lint": "npm run build -w @svajna/core && npm run lint -w @svajna/core && npm run lint -w @svajna/cli && npm run lint -w @svajna/mcp"
   },

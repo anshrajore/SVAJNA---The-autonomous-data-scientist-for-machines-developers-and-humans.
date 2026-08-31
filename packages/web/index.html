@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hanzo — Product Designer & Autonomous AI Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #e5e5e5;
+      --card-bg: #f3f3f3;
+      --text-main: #111111;
+      --text-muted: #666666;
+      --pill-bg: #000000;
+      --pill-text: #ffffff;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      background: #ededed;
+      border-radius: 24px;
+      padding: 40px 40px 60px 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 80px;
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+    }
+
+    .menu-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .menu-btn span {
+      width: 14px;
+      height: 1.5px;
+      background: #111;
+      border-radius: 1px;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 60px auto;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: 72px;
+      line-height: 1.1;
+      font-weight: 400;
+      color: var(--text-main);
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+
+    .avatar-inline {
+      display: inline-block;
+      vertical-align: middle;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 6px;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .hero-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto 32px auto;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--pill-bg);
+      color: var(--pill-text);
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      background: #222222;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: #1a1d24;
+      border-radius: 16px;
+      padding: 24px;
+      color: #fff;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: #9aa0a6;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 44px;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">Hanzo</div>
+      <div class="menu-btn">
+        <span></span>
+        <span></span>
+      </div>
+    </header>
+
+    <main class="hero">
+      <h1 class="hero-title">
+        I'm Hanzo 
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="avatar-inline" alt="Hanzo">,
+        <br>
+        a Product 
+        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80" class="avatar-inline" alt="Design">
+        Designer
+        <br>
+        based in Tokyo 
+        <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=100&auto=format&fit=crop&q=80" class="avatar-inline" alt="Tokyo">
+      </h1>
+
+      <p class="hero-subtitle">
+        I have 11 years of experience working on useful and mindful products together with startups and known brands.
+      </p>
+
+      <a href="#projects" class="cta-btn">
+        Remix Template ↗
+      </a>
+    </main>
+
+    <section class="cards-grid" id="projects">
+      <div class="card">
+        <div>
+          <h2 class="card-title">SVAJNA Engine</h2>
+          <p class="card-desc">Autonomous Data Scientist with Verifiable Execution</p>
+        </div>
+      </div>
+      <div class="card" style="background: linear-gradient(135deg, #0d1b2a, #1b263b);">
+        <div>
+          <h2 class="card-title">AI-Powered Workflow</h2>
+          <p class="card-desc">Integration Systems & Bounded Autonomy</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
