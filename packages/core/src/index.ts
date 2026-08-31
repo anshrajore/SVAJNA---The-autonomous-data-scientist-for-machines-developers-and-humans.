@@ -34,6 +34,7 @@ export * from "./workflow-durable.js";
 export * from "./approval-durable.js";
 export * from "./connector-sqlite.js";
 export * from "./connector-postgres.js";
+export * from "./connector-registry.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
