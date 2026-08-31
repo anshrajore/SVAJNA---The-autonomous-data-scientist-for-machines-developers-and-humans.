@@ -37,6 +37,7 @@ export * from "./connector-postgres.js";
 export * from "./connector-registry.js";
 export * from "./diff-engine.js";
 export * from "./audit.js";
+export * from "./notification.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
