@@ -7,6 +7,7 @@ describe("capOutliers", () => {
     const rows = [{ val: 10 }, { val: 12 }, { val: 14 }, { val: 15 }, { val: 100 }];
     const res = capOutliers(rows, "val");
     assert.equal(res.cappedCount, 1);
-    assert.ok(res.cappedRows[4]!.val < 100);
+    const val = Number(res.cappedRows[4]!.val);
+    assert.ok(val < 100);
   });
 });

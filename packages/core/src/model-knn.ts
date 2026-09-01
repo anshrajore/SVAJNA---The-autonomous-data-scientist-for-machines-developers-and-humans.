@@ -11,7 +11,7 @@ export interface KNNClassifierModel {
 export function trainKNNClassifier(trainRows: DataRow[], labelCol: string, k = 3): KNNClassifierModel {
   return {
     k,
-    predict: (sample: DataRow, featureCols: string[]) => {
+    predict: (sample: DataRow, featureCols: string[]): string | number => {
       const distances = trainRows.map((tr) => {
         let sumSq = 0;
         featureCols.forEach((col) => {
@@ -19,7 +19,9 @@ export function trainKNNClassifier(trainRows: DataRow[], labelCol: string, k = 3
           const v2 = parseFloat(String(tr[col] ?? 0));
           sumSq += (v1 - v2) ** 2;
         });
-        return { label: tr[labelCol]!, dist: Math.sqrt(sumSq) };
+        const rawLabel = tr[labelCol];
+        const label: string | number = typeof rawLabel === "string" || typeof rawLabel === "number" ? rawLabel : String(rawLabel ?? "");
+        return { label, dist: Math.sqrt(sumSq) };
       });
 
       distances.sort((a, b) => a.dist - b.dist);

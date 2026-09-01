@@ -13,16 +13,27 @@ export interface DecisionNode {
  */
 export function trainDecisionStump(rows: DataRow[], featureCol: string, labelCol: string): DecisionNode {
   const nums = rows.map((r) => parseFloat(String(r[featureCol]))).filter((v) => !isNaN(v));
-  if (!nums.length) return { label: rows[0]?.[labelCol] ?? "unknown" };
+  if (!nums.length) {
+    const raw = rows[0]?.[labelCol];
+    const lbl = typeof raw === "string" || typeof raw === "number" ? raw : "unknown";
+    return { label: lbl };
+  }
 
   const threshold = nums.reduce((a, b) => a + b, 0) / nums.length;
   const leftRows = rows.filter((r) => parseFloat(String(r[featureCol])) <= threshold);
   const rightRows = rows.filter((r) => parseFloat(String(r[featureCol])) > threshold);
 
-  const getMajority = (arr: DataRow[]) => {
+  const getMajority = (arr: DataRow[]): string | number => {
     const counts = new Map<string | number, number>();
-    arr.forEach((r) => counts.set(r[labelCol]!, (counts.get(r[labelCol]!) ?? 0) + 1));
-    let best = arr[0]?.[labelCol] ?? "unknown";
+    arr.forEach((r) => {
+      const val = r[labelCol];
+      if (typeof val === "string" || typeof val === "number") {
+        counts.set(val, (counts.get(val) ?? 0) + 1);
+      }
+    });
+
+    const firstRaw = arr[0]?.[labelCol];
+    let best: string | number = typeof firstRaw === "string" || typeof firstRaw === "number" ? firstRaw : "unknown";
     let max = 0;
     for (const [k, c] of counts) {
       if (c > max) {
