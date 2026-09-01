@@ -50,6 +50,7 @@ export * from "./correlation-engine.js";
 export * from "./impute-engine.js";
 export * from "./outlier-engine.js";
 export * from "./scaler-engine.js";
+export * from "./minmax-scaler.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
