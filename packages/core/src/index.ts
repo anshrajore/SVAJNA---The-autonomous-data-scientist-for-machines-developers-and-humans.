@@ -54,6 +54,7 @@ export * from "./minmax-scaler.js";
 export * from "./encoder-onehot.js";
 export * from "./train-test-splitter.js";
 export * from "./metrics-regression.js";
+export * from "./metrics-classification.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
