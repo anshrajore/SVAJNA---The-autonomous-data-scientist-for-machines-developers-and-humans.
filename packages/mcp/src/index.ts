@@ -124,6 +124,25 @@ export function createServer(): McpServer {
     },
   );
 
+  server.registerTool(
+    "data_drift",
+    {
+      title: "Detect dataset statistical drift",
+      description: "Compare baseline and current dataset versions to detect statistical mean drift in numeric columns.",
+      inputSchema: { baseline: z.string(), current: z.string(), column: z.string() },
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ baseline, current, column }) => {
+      try {
+        const [base, curr] = await Promise.all([loadDataset(projectFile(baseline)), loadDataset(projectFile(current))]);
+        const { detectDataDrift } = await import("@svajna/core");
+        return text(detectDataDrift(base.rows, curr.rows, column));
+      } catch (error) {
+        return { content: [{ type: "text" as const, text: error instanceof Error ? error.message : String(error) }], isError: true };
+      }
+    },
+  );
+
   server.registerPrompt(
     "review_analysis",
     { description: "A reusable prompt for evidence-based review of a SVAJNA analysis run.", argsSchema: { question: z.string().describe("The analytical question to review.") } },
