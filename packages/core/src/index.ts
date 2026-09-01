@@ -45,6 +45,7 @@ export * from "./schema-standardizer.js";
 export * from "./aggregation-engine.js";
 export * from "./join-engine.js";
 export * from "./filter-engine.js";
+export * from "./exporter.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
