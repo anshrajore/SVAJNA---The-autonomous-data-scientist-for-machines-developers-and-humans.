@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { access, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { analyze, loadConfig, PipelineEngine } from "@svajna/core";
+import { analyze, loadConfig, PipelineEngine, loadDataset, detectDataDrift } from "@svajna/core";
 
-const [command, argument] = process.argv.slice(2);
+const [command, argument, extraArg] = process.argv.slice(2);
 
 function usage(): void {
-  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna pipeline <data.csv|data.json>\n  svajna report\n  svajna status");
+  console.log("SVAJNA — autonomous data science with verifiable execution\n\nUsage:\n  svajna init\n  svajna analyze <data.csv|data.json>\n  svajna pipeline <data.csv|data.json>\n  svajna drift <baseline.json> <current.json> <column>\n  svajna report\n  svajna status");
 }
 
 async function main(): Promise<void> {
@@ -32,6 +32,15 @@ async function main(): Promise<void> {
     ]);
     const res = await pipe.execute(argument);
     console.log(`Pipeline executed: ${res.id}\nSource: ${res.source}\nSteps completed: ${res.stepsCompleted.join(", ")}\nQuality score: ${res.profile.quality.score}/100`);
+    return;
+  }
+  if (command === "drift") {
+    if (!argument || !extraArg || !process.argv[5]) {
+      throw new Error("Usage: svajna drift <baseline.json> <current.json> <column>");
+    }
+    const [base, curr] = await Promise.all([loadDataset(argument), loadDataset(extraArg)]);
+    const report = detectDataDrift(base.rows, curr.rows, process.argv[5]);
+    console.log(`Drift Analysis (${report.column}):\nDrift Detected: ${report.driftDetected ? "YES" : "NO"}\nBaseline Mean: ${report.baselineMean}\nCurrent Mean: ${report.currentMean}\nRatio: ${(report.differenceRatio * 100).toFixed(2)}%`);
     return;
   }
   if (command === "report") {
