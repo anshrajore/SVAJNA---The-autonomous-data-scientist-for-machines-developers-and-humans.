@@ -40,6 +40,7 @@ export * from "./audit.js";
 export * from "./notification.js";
 export * from "./schema-migration.js";
 export * from "./pipeline.js";
+export * from "./transform.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
