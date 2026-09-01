@@ -59,6 +59,7 @@ export * from "./model-linear-regression.js";
 export * from "./model-knn.js";
 export * from "./model-decision-stump.js";
 export * from "./model-registry.js";
+export * from "./data-drift.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
