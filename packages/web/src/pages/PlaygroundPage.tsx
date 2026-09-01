@@ -14,10 +14,30 @@ const SAMPLE_TEAM_V2 = [
 ];
 
 export const PlaygroundPage: React.FC = () => {
-  const [datasetChoice, setDatasetChoice] = useState<"v1" | "v2">("v1");
-  const currentRows = datasetChoice === "v1" ? SAMPLE_TEAM_V1 : SAMPLE_TEAM_V2;
-  const profile = profileDataset(`sample_team_${datasetChoice}.json`, currentRows);
+  const [datasetChoice, setDatasetChoice] = useState<"v1" | "v2" | "custom">("v1");
+  const [customRows, setCustomRows] = useState<any[] | null>(null);
+
+  const currentRows = customRows ?? (datasetChoice === "v1" ? SAMPLE_TEAM_V1 : SAMPLE_TEAM_V2);
+  const profile = profileDataset(customRows ? "custom.json" : `sample_team_${datasetChoice}.json`, currentRows);
   const diff = diffRows(SAMPLE_TEAM_V1, SAMPLE_TEAM_V2, "id");
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (Array.isArray(json)) {
+          setCustomRows(json);
+          setDatasetChoice("custom");
+        }
+      } catch {
+        alert("Please upload a valid JSON array file.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
