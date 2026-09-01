@@ -1,22 +1,126 @@
+export function parseBrowserCsv(text: string): Record<string, any>[] {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  // Parse header line
+  const headers = parseCsvLine(lines[0]!);
+  const rows: Record<string, any>[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCsvLine(lines[i]!);
+    if (!values.length || values.every((v) => v === "")) continue;
+    const row: Record<string, any> = {};
+    headers.forEach((h, idx) => {
+      const raw = values[idx] ?? "";
+      row[h] = inferType(raw);
+    });
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let cur = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"' || ch === "'") {
+      insideQuotes = !insideQuotes;
+    } else if (ch === "," && !insideQuotes) {
+      result.push(cur.trim().replace(/^["']|["']$/g, ""));
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim().replace(/^["']|["']$/g, ""));
+  return result;
+}
+
+function inferType(val: string): any {
+  if (val === "" || val === "null" || val === "undefined") return null;
+  if (val.toLowerCase() === "true") return true;
+  if (val.toLowerCase() === "false") return false;
+  const num = Number(val);
+  if (!isNaN(num) && val.trim() !== "") return num;
+  return val;
+}
+
 export function profileDataset(source: string, rows: Record<string, any>[]) {
+  if (!rows.length) {
+    return {
+      source,
+      rowCount: 0,
+      columns: [],
+      score: 100,
+      stats: {},
+      qualityFindings: [],
+    };
+  }
+
   const keys = [...new Set(rows.flatMap(Object.keys))];
+  let nullCount = 0;
+  const stats: Record<string, { min?: number; max?: number; mean?: number; median?: number; distribution?: { label: string; count: number }[] }> = {};
+
   const columns = keys.map((key) => {
-    const values = rows.map((r) => r[key]).filter((v) => v !== undefined && v !== null);
-    const sample = values[0];
+    const values = rows.map((r) => r[key]);
+    const present = values.filter((v) => v !== undefined && v !== null && v !== "");
+    const missing = values.length - present.length;
+    nullCount += missing;
+
+    const sample = present[0];
     const kind = typeof sample === "number" ? "number" : typeof sample === "boolean" ? "boolean" : "string";
+
+    if (kind === "number") {
+      const nums = present.map((v) => Number(v)).filter((v) => !isNaN(v)).sort((a, b) => a - b);
+      if (nums.length) {
+        const min = nums[0]!;
+        const max = nums[nums.length - 1]!;
+        const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+        const median = nums[Math.floor(nums.length / 2)]!;
+
+        // 5-bucket distribution for histogram
+        const buckets = 5;
+        const step = (max - min) / buckets || 1;
+        const dist: { label: string; count: number }[] = [];
+        for (let b = 0; b < buckets; b++) {
+          const lower = min + b * step;
+          const upper = lower + step;
+          const count = nums.filter((n) => (b === buckets - 1 ? n >= lower && n <= upper : n >= lower && n < upper)).length;
+          dist.push({ label: `${Math.round(lower)}-${Math.round(upper)}`, count });
+        }
+
+        stats[key] = { min, max, mean: Math.round(mean * 100) / 100, median, distribution: dist };
+      }
+    }
+
     return {
       name: key,
       kind,
-      present: values.length,
-      distinct: new Set(values).size,
+      present: present.length,
+      missing,
+      distinct: new Set(present).size,
     };
   });
+
+  const totalCells = rows.length * (keys.length || 1);
+  const missingRatio = totalCells ? nullCount / totalCells : 0;
+  const score = Math.max(0, Math.round(100 - missingRatio * 100));
+
+  const qualityFindings = [];
+  if (missingRatio > 0.05) qualityFindings.push(`Dataset has ${(missingRatio * 100).toFixed(1)}% missing values.`);
+  if (score > 90) qualityFindings.push("Schema is highly uniform and suitable for deterministic modeling.");
 
   return {
     source,
     rowCount: rows.length,
     columns,
-    score: 100,
+    score,
+    stats,
+    qualityFindings,
   };
 }
 
@@ -70,9 +174,9 @@ export function trainSimpleLinearRegression(rows: Record<string, any>[], xCol: s
   const intercept = meanY - slope * meanX;
 
   return {
-    slope,
-    intercept,
-    predict: (x: number) => slope * x + intercept,
+    slope: Math.round(slope * 1000) / 1000,
+    intercept: Math.round(intercept * 1000) / 1000,
+    predict: (x: number) => Math.round((slope * x + intercept) * 1000) / 1000,
   };
 }
 
@@ -87,7 +191,12 @@ export function calculateRegressionMetrics(actuals: number[], predictions: numbe
   const ssTot = actuals.reduce((acc, act) => acc + (act - meanActual) ** 2, 0);
   const ssRes = errors.reduce((acc, err) => acc + err ** 2, 0);
   const r2 = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
-  return { mse, rmse, mae, r2 };
+  return {
+    mse: Math.round(mse * 100) / 100,
+    rmse: Math.round(rmse * 100) / 100,
+    mae: Math.round(mae * 100) / 100,
+    r2: Math.round(r2 * 1000) / 1000,
+  };
 }
 
 export function exportDataset(rows: Record<string, any>[], options: { format: "csv" | "json" }) {
