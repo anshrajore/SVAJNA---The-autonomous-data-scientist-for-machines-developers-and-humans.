@@ -42,6 +42,7 @@ export * from "./schema-migration.js";
 export * from "./pipeline.js";
 export * from "./transform.js";
 export * from "./schema-standardizer.js";
+export * from "./aggregation-engine.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
