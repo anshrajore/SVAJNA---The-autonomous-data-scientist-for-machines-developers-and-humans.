@@ -52,6 +52,7 @@ export * from "./outlier-engine.js";
 export * from "./scaler-engine.js";
 export * from "./minmax-scaler.js";
 export * from "./encoder-onehot.js";
+export * from "./train-test-splitter.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
