@@ -51,6 +51,7 @@ export * from "./impute-engine.js";
 export * from "./outlier-engine.js";
 export * from "./scaler-engine.js";
 export * from "./minmax-scaler.js";
+export * from "./encoder-onehot.js";
 export { loadDataset, parseCsv } from "./parse.js";
 export { profileDataset } from "./profile.js";
 
