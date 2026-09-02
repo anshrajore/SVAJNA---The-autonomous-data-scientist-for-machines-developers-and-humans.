@@ -135,3 +135,30 @@ export function downloadFile(content: string, filename: string, mimeType: string
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export function diffRows(beforeRows: Record<string, any>[], afterRows: Record<string, any>[], keyColumn: string) {
+  const beforeMap = new Map(beforeRows.map((r) => [String(r[keyColumn]), r]));
+  const afterMap = new Map(afterRows.map((r) => [String(r[keyColumn]), r]));
+
+  const added: any[] = [];
+  const removed: any[] = [];
+  const modified: any[] = [];
+
+  for (const [key, afterRow] of afterMap) {
+    const beforeRow = beforeMap.get(key);
+    if (!beforeRow) {
+      added.push(afterRow);
+    } else if (JSON.stringify(beforeRow) !== JSON.stringify(afterRow)) {
+      modified.push({ before: beforeRow, after: afterRow });
+    }
+  }
+
+  for (const [key, beforeRow] of beforeMap) {
+    if (!afterMap.has(key)) {
+      removed.push(beforeRow);
+    }
+  }
+
+  return { added, removed, modified };
+}
+
