@@ -14,7 +14,8 @@
     "@svajna/core": "0.1.0",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",
