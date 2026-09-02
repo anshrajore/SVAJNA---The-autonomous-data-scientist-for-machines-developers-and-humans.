@@ -17,7 +17,12 @@ function percentile(sorted: number[], p: number): number {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
+/**
+ * Calculates comprehensive descriptive statistics for numeric columns,
+ * including mean, median, mode, variance, std, skewness, kurtosis, and IQR.
+ */
 export function computeColumnStats(rawValues: unknown[]): ColumnStats {
+
   const numbers: number[] = [];
   let missing = 0;
 
