@@ -40,3 +40,28 @@ export function capOutliers(rows: DataRow[], column: string, factor = 1.5): Outl
 
   return { cappedRows, cappedCount };
 }
+
+/**
+ * Returns row indices containing numerical outliers according to IQR.
+ */
+export function detectOutlierIndices(rows: DataRow[], column: string, factor = 1.5): number[] {
+  const vals = rows
+    .map((r) => parseFloat(String(r[column])))
+    .filter((v) => !isNaN(v))
+    .sort((a, b) => a - b);
+  if (!vals.length) return [];
+  const q1 = vals[Math.floor(vals.length * 0.25)]!;
+  const q3 = vals[Math.floor(vals.length * 0.75)]!;
+  const iqr = q3 - q1;
+  const lowerBound = q1 - factor * iqr;
+  const upperBound = q3 + factor * iqr;
+  const outlierIndices: number[] = [];
+  rows.forEach((r, i) => {
+    const val = parseFloat(String(r[column]));
+    if (!isNaN(val) && (val < lowerBound || val > upperBound)) {
+      outlierIndices.push(i);
+    }
+  });
+  return outlierIndices;
+}
+
