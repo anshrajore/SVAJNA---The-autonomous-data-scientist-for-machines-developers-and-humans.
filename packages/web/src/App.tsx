@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -51,6 +51,12 @@ import {
   Play,
   RotateCcw,
   PlusCircle,
+  Command,
+  LayoutGrid,
+  FileSpreadsheet,
+  PieChart as PieIcon,
+  Box,
+  CornerDownLeft,
 } from "lucide-react";
 
 import {
@@ -94,43 +100,41 @@ const DEMO_SAMPLE_DATA = [
 ];
 
 export const App: React.FC = () => {
-  const [activeAccordion, setActiveAccordion] = useState<number>(2);
   const [isConsoleOpen, setIsConsoleOpen] = useState<boolean>(false);
-  const [consoleTab, setConsoleTab] = useState<"investigation" | "plan" | "quality" | "hypotheses" | "visualizer" | "ml" | "predictions" | "code">("investigation");
   const [osTab, setOsTab] = useState<"mac" | "linux" | "win" | "docker">("mac");
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [autonomyLevel, setAutonomyLevel] = useState<number>(3); // Level 3: Autonomous Analysis
 
-  // Start from 0 (blank state) as requested
+  // Left Sidebar Navigation Category
+  const [activeNav, setActiveNav] = useState<"overview" | "files" | "datasets" | "analyses" | "insights" | "investigations" | "experiments" | "models" | "predictions" | "reports">("overview");
+
+  // Command Modal (⌘K)
+  const [isCmdModalOpen, setIsCmdModalOpen] = useState<boolean>(false);
+  const [cmdQuery, setCmdQuery] = useState<string>("");
+
+  // Start from 0 (blank state)
   const [datasetRows, setDatasetRows] = useState<Record<string, any>[]>([]);
   const [fileName, setFileName] = useState<string>("No Dataset Loaded");
 
-  // Charting selection
+  // Charting & ML State
   const [scatterX, setScatterX] = useState<string>("");
   const [scatterY, setScatterY] = useState<string>("");
   const [histCol, setHistCol] = useState<string>("");
-
-  // ML Lab Selection
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<"linear" | "logistic" | "knn" | "kmeans" | "decisionTree">("linear");
   const [selectedTarget, setSelectedTarget] = useState<string>("");
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [paramK, setParamK] = useState<number>(3);
   const [paramEpochs, setParamEpochs] = useState<number>(300);
 
-  // Trained ML models
+  // Models & Predictions
   const [trainedLinearModel, setTrainedLinearModel] = useState<LinearRegressionResult | null>(null);
   const [trainedLogisticModel, setTrainedLogisticModel] = useState<LogisticRegressionResult | null>(null);
-
-  // Prediction input form state
   const [predictionInputs, setPredictionInputs] = useState<Record<string, number>>({});
   const [predictionOutput, setPredictionOutput] = useState<string | number | null>(null);
 
-  // Derived column types
+  // Autonomous Intelligence Computations
   const numericCols = useMemo(() => getNumericColumns(datasetRows), [datasetRows]);
   const categoricalCols = useMemo(() => getCategoricalColumns(datasetRows), [datasetRows]);
   const columnTypes = useMemo(() => inferColumnTypes(datasetRows), [datasetRows]);
-
-  // Autonomous Intelligence Computations
   const fileIntel = useMemo(() => generateFileIntelligence(fileName, datasetRows), [fileName, datasetRows]);
   const qualityIssues = useMemo(() => detectQualityIssues(datasetRows), [datasetRows]);
   const investigationTree = useMemo(() => buildAutonomousInvestigationGraph(datasetRows, numericCols[0] || 'sales'), [datasetRows, numericCols]);
@@ -139,21 +143,30 @@ export const App: React.FC = () => {
   const reproducibleCode = useMemo(() => generateReproducibleCode(selectedAlgorithm as any, selectedTarget || 'target', selectedFeatures.length ? selectedFeatures : ['feature1']), [selectedAlgorithm, selectedTarget, selectedFeatures]);
   const corrData = useMemo(() => correlationMatrix(datasetRows, numericCols), [datasetRows, numericCols]);
 
+  // Command Shortcut (⌘K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCmdModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const loadSampleDataset = () => {
     setDatasetRows(DEMO_SAMPLE_DATA);
     setFileName("enterprise_analytics_sample.csv");
-    if (numericCols.length >= 2) {
-      setScatterX(numericCols[0]!);
-      setScatterY(numericCols[1]!);
-      setHistCol(numericCols[0]!);
-      setSelectedTarget(numericCols[1]!);
-      setSelectedFeatures([numericCols[0]!]);
-    } else {
-      setScatterX("sales");
-      setScatterY("profit");
-      setHistCol("sales");
-      setSelectedTarget("profit");
-      setSelectedFeatures(["sales", "score"]);
+    if (DEMO_SAMPLE_DATA.length > 0) {
+      const nums = getNumericColumns(DEMO_SAMPLE_DATA);
+      if (nums.length >= 2) {
+        setScatterX(nums[0]!);
+        setScatterY(nums[1]!);
+        setHistCol(nums[0]!);
+        setSelectedTarget(nums[1]!);
+        setSelectedFeatures([nums[0]!]);
+      }
     }
   };
 
@@ -208,7 +221,7 @@ export const App: React.FC = () => {
         setTrainedLogisticModel(res);
       }
     } catch (err: any) {
-      alert("Training error: " + (err?.message || "Verify selected features and target."));
+      alert("Training error: " + (err?.message || "Verify features and target."));
     }
   };
 
@@ -283,7 +296,7 @@ export const App: React.FC = () => {
 
             <div>
               <div className="hero-creator-pill">
-                <Sparkles style={{ width: 13, height: 13 }} /> Autonomous Investigation Studio • ANSH RAJORE
+                <Sparkles style={{ width: 13, height: 13 }} /> Autonomous Operating System • ANSH RAJORE
               </div>
 
               <h1 className="hero-headline">
@@ -298,7 +311,7 @@ export const App: React.FC = () => {
 
               <div className="hero-actions">
                 <button className="btn-orange-pill" onClick={() => setIsConsoleOpen(true)}>
-                  Explore Platform Studio
+                  Launch Autonomous Studio
                 </button>
                 <button className="btn-circle-arrow" onClick={() => setIsConsoleOpen(true)}>
                   <ArrowUpRight style={{ width: 18, height: 18 }} />
@@ -311,7 +324,7 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 3D Smart Cards Visual */}
+            {/* 3D Visual Cards */}
             <div className="hero-visual-container">
               <div className="card-3d-stack">
                 <div className="smart-card orange-top">
@@ -339,21 +352,6 @@ export const App: React.FC = () => {
                 <div className="smart-card black-bottom">
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: "12px", opacity: 0.6 }}>IMMUTABLE AUDIT PROOF</span>
                   <div className="card-number">•••• •••• •••• 2026</div>
-                </div>
-              </div>
-
-              <div className="hero-step-guide">
-                <div className="step-guide-item">
-                  <span className="step-guide-text">Ingest CSV or JSON</span>
-                  <span className="step-guide-num">01</span>
-                </div>
-                <div className="step-guide-item">
-                  <span className="step-guide-text">Recharts Analytics</span>
-                  <span className="step-guide-num">02</span>
-                </div>
-                <div className="step-guide-item">
-                  <span className="step-guide-text">Train Local Models</span>
-                  <span className="step-guide-num">03</span>
                 </div>
               </div>
             </div>
@@ -404,120 +402,7 @@ export const App: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. ABOUT & BENTO METRICS */}
-      <section className="section-light" id="about">
-        <div className="site-container">
-          <div className="section-tag light-theme">// ABOUT THE OPERATING SYSTEM</div>
-          <div className="section-header-split">
-            <h2 className="section-title dark-text">
-              ENGINEERED BY
-              <br />
-              ANSH RAJORE
-            </h2>
-            <p className="section-lead-desc">
-              SVAJNA replaces brittle notebook scripts with verifiable, mathematically backed execution graphs.
-            </p>
-          </div>
-
-          <div className="bento-stats-grid">
-            <div className="bento-stat-card orange">
-              <div className="stat-icon-badge black-bg">
-                <Cpu style={{ width: 18, height: 18, color: "#fff" }} />
-              </div>
-              <div>
-                <div className="bento-stat-val">
-                  8 <span>ML Engines</span>
-                </div>
-                <p className="bento-stat-desc">
-                  Built-in linear, logistic, KNN, K-Means, Decision Tree, statistics, and correlation algorithms running purely in browser memory.
-                </p>
-              </div>
-            </div>
-
-            <div className="bento-stat-card black">
-              <div className="stat-icon-badge orange-bg">
-                <CheckCircle2 style={{ width: 18, height: 18, color: "#fff" }} />
-              </div>
-              <div>
-                <div className="bento-stat-val">
-                  100<span>%</span>
-                </div>
-                <p className="bento-stat-desc" style={{ color: "#a1a1aa" }}>
-                  Deterministic execution rating with SHA-256 audit verification and zero-exfiltration privacy bounds.
-                </p>
-              </div>
-            </div>
-
-            <div className="bento-stat-card white">
-              <div className="stat-icon-badge orange-bg">
-                <Shield style={{ width: 18, height: 18, color: "#fff" }} />
-              </div>
-              <div>
-                <div className="bento-stat-val">
-                  58<span>/58</span>
-                </div>
-                <p className="bento-stat-desc" style={{ color: "#71717a" }}>
-                  Passing automated unit test suites covering CLI, MCP protocol, and Core dataset transformation engines.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. ENTERPRISE SECURITY POLICIES */}
-      <section className="section-dark" id="security">
-        <div className="site-container">
-          <div className="hero-creator-pill">
-            <Shield style={{ width: 13, height: 13 }} /> PROPRIETARY SAFETY PROTOCOLS
-          </div>
-
-          <div className="section-header-split">
-            <h2 className="section-title white-text">
-              MODEL SECURITY &
-              <br />
-              PROTECTION POLICIES
-            </h2>
-            <p className="section-lead-desc white-theme">
-              SVAJNA anchors all analytical intelligence inside a strictly bounded security sandbox.
-            </p>
-          </div>
-
-          <div className="security-grid">
-            <div className="security-card">
-              <div className="security-icon">
-                <Lock style={{ width: 22, height: 22 }} />
-              </div>
-              <h3 className="security-title">Zero-Exfiltration Sandbox</h3>
-              <p className="security-desc">
-                Raw datasets never leave your local machine or private VPC. File profiling and model fitting occur purely in local memory.
-              </p>
-            </div>
-
-            <div className="security-card">
-              <div className="security-icon">
-                <Database style={{ width: 22, height: 22 }} />
-              </div>
-              <h3 className="security-title">SHA-256 Cryptographic Lineage</h3>
-              <p className="security-desc">
-                Every calculation and model metric generates a deterministic SHA-256 hash stored in an append-only verifiable audit trail.
-              </p>
-            </div>
-
-            <div className="security-card">
-              <div className="security-icon">
-                <Sliders style={{ width: 22, height: 22 }} />
-              </div>
-              <h3 className="security-title">Bounded Autonomy Gates</h3>
-              <p className="security-desc">
-                Enforces strict 0–6 autonomy levels. High-impact operations require cryptographic human-in-the-loop approval.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. GIANT WORDMARK & FOOTER */}
+      {/* GIANT WORDMARK & FOOTER */}
       <div className="giant-3d-wordmark-container">
         <div className="giant-3d-wordmark">svajna</div>
       </div>
@@ -530,46 +415,39 @@ export const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* 7. AUTONOMOUS DATA SCIENCE STUDIO FULL-SCREEN WORKSPACE MODAL */}
+      {/* 4. AUTONOMOUS DATA SCIENCE STUDIO — 3-ZONE INFINITE CANVAS + COMMAND CENTER MODAL */}
       {isConsoleOpen && (
         <div className="modal-overlay" onClick={() => setIsConsoleOpen(false)}>
-          <div className="modal-window" style={{ maxWidth: "1280px", height: "92vh" }} onClick={(e) => e.stopPropagation()}>
-            {/* Studio Header Bar */}
-            <div className="modal-header" style={{ background: "#09090d", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                <div className="brand-svg-logo" style={{ width: "34px", height: "34px" }}>
+          <div className="modal-window" style={{ maxWidth: "1400px", height: "94vh", border: "1px solid rgba(255,255,255,0.12)" }} onClick={(e) => e.stopPropagation()}>
+            {/* Top Studio Header Bar */}
+            <div className="modal-header" style={{ background: "#09090d", padding: "14px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div className="brand-svg-logo" style={{ width: "32px", height: "32px" }}>
                   <Layers style={{ width: 18, height: 18, color: "#fff" }} />
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#fff" }}>SVAJNA Autonomous Data Science Studio</h3>
+                    <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#fff" }}>SVAJNA Studio Operating System</h3>
                     <span style={{ background: "rgba(255,77,0,0.15)", border: "1px solid rgba(255,77,0,0.3)", color: "var(--orange-primary)", padding: "2px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700 }}>
                       BY ANSH RAJORE
                     </span>
                   </div>
-                  <div style={{ fontSize: "11px", color: "#94a3b8" }}>
-                    Loaded: <strong style={{ color: datasetRows.length ? "#38bdf8" : "#f87171" }}>{fileName}</strong> ({datasetRows.length} rows • {fileIntel.columnCount} columns)
+                  <div style={{ fontSize: "11px", color: "#64748b" }}>
+                    Project: <strong style={{ color: "#e2e8f0" }}>Customer Intelligence</strong> • Active Dataset: <strong style={{ color: datasetRows.length ? "#38bdf8" : "#f87171" }}>{fileName}</strong>
                   </div>
                 </div>
               </div>
 
-              {/* Autonomy Level Switcher */}
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "#13131a", padding: "4px 10px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <Shield style={{ width: 13, height: 13, color: "var(--orange-primary)" }} />
-                  <span style={{ fontSize: "11px", color: "#94a3b8" }}>Autonomy Level:</span>
-                  <select
-                    value={autonomyLevel}
-                    onChange={(e) => setAutonomyLevel(Number(e.target.value))}
-                    style={{ background: "transparent", color: "#fff", border: "none", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
-                  >
-                    <option value={0}>L0: Manual Mode</option>
-                    <option value={1}>L1: AI Suggestions</option>
-                    <option value={2}>L2: AI with Approval</option>
-                    <option value={3}>L3: Autonomous Analysis</option>
-                    <option value={4}>L4: Continuous Monitoring</option>
-                  </select>
-                </div>
+              {/* Top Quick Actions */}
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <button
+                  onClick={() => setIsCmdModalOpen(true)}
+                  style={{ background: "#13131a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", padding: "6px 14px", borderRadius: "8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+                >
+                  <Command style={{ width: 14, height: 14, color: "var(--orange-primary)" }} />
+                  <span>Command Center</span>
+                  <span style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontFamily: "var(--font-mono)" }}>⌘K</span>
+                </button>
 
                 <button
                   onClick={() => setIsConsoleOpen(false)}
@@ -580,359 +458,347 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Studio Navigation Tabs */}
-            <div style={{ display: "flex", gap: "6px", padding: "10px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#09090d", overflowX: "auto" }}>
-              {[
-                { id: "investigation", label: "Autonomous Root-Cause Tree", icon: <GitBranch style={{ width: 14, height: 14 }} /> },
-                { id: "plan", label: "Analysis Plan", icon: <Compass style={{ width: 14, height: 14 }} /> },
-                { id: "quality", label: "Data Quality Autopilot", icon: <AlertCircle style={{ width: 14, height: 14 }} /> },
-                { id: "hypotheses", label: "Hypotheses & Stats", icon: <Activity style={{ width: 14, height: 14 }} /> },
-                { id: "visualizer", label: "Recharts Suite", icon: <BarChart2 style={{ width: 14, height: 14 }} /> },
-                { id: "ml", label: "ML Training Lab", icon: <Cpu style={{ width: 14, height: 14 }} /> },
-                { id: "predictions", label: "Live Predictions", icon: <Sparkles style={{ width: 14, height: 14 }} /> },
-                { id: "code", label: "Reproducible Code", icon: <Code style={{ width: 14, height: 14 }} /> },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setConsoleTab(t.id as any)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    background: consoleTab === t.id ? "var(--orange-primary)" : "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    padding: "7px 14px",
-                    borderRadius: "8px",
-                    border: "1px solid " + (consoleTab === t.id ? "var(--orange-primary)" : "rgba(255,255,255,0.08)"),
-                    fontWeight: 600,
-                    fontSize: "12px",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t.icon}
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Studio Workspace Main Body */}
-            <div className="modal-body" style={{ background: "#07070a", padding: "24px" }}>
-              {/* START FROM 0 BLANK UPLOAD BAR */}
-              {datasetRows.length === 0 ? (
-                <div style={{ background: "#0e0e13", border: "2px dashed rgba(255,77,0,0.4)", borderRadius: "20px", padding: "48px", textAlign: "center", margin: "20px 0" }}>
-                  <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "rgba(255,77,0,0.12)", border: "1px solid rgba(255,77,0,0.3)", color: "var(--orange-primary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto" }}>
-                    <Upload style={{ width: 28, height: 28 }} />
-                  </div>
-                  <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Start Workspace From 0</h3>
-                  <p style={{ fontSize: "13px", color: "#94a3b8", maxWidth: "480px", margin: "0 auto 24px auto", lineHeight: 1.6 }}>
-                    Upload your raw CSV or JSON dataset to activate full autonomous file intelligence, data quality autopilot, hypothesis testing, and machine learning pipelines.
-                  </p>
-
-                  <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
-                    <label className="btn-orange-pill" style={{ padding: "12px 28px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                      <Upload style={{ width: 16, height: 16 }} />
-                      Browse & Select Dataset File
-                      <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: "none" }} />
-                    </label>
-
-                    <button className="nav-cta-btn" onClick={loadSampleDataset} style={{ padding: "12px 24px" }}>
-                      <Sparkles style={{ width: 14, height: 14, marginRight: 6, display: "inline-block" }} /> Load Demo Sample Dataset
-                    </button>
-                  </div>
+            {/* 3-ZONE LAYOUT BODY */}
+            <div className="studio-3zone-layout">
+              {/* ZONE 1: LEFT SIDEBAR NAVIGATION (240px) */}
+              <div className="studio-sidebar-left">
+                <div>
+                  <div className="sidebar-section-title">PROJECT</div>
+                  <button className={`sidebar-nav-btn ${activeNav === 'overview' ? 'active' : ''}`} onClick={() => setActiveNav('overview')}>
+                    <Compass style={{ width: 15, height: 15 }} /> Overview
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'files' ? 'active' : ''}`} onClick={() => setActiveNav('files')}>
+                    <FileSpreadsheet style={{ width: 15, height: 15 }} /> Files & Schemas
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'datasets' ? 'active' : ''}`} onClick={() => setActiveNav('datasets')}>
+                    <Database style={{ width: 15, height: 15 }} /> Datasets
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'analyses' ? 'active' : ''}`} onClick={() => setActiveNav('analyses')}>
+                    <Table style={{ width: 15, height: 15 }} /> Analyses
+                  </button>
                 </div>
-              ) : (
-                <>
-                  {/* File status header bar when data is loaded */}
-                  <label className="dropzone-box" style={{ display: "block", marginBottom: "20px", padding: "14px 20px" }}>
-                    <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: "none" }} />
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <Upload style={{ width: 16, height: 16, color: "var(--orange-primary)" }} />
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Ingest New Dataset File</span>
-                        <span style={{ fontSize: "11px", color: "#94a3b8" }}>Current: <strong style={{ color: "#38bdf8" }}>{fileName}</strong> ({datasetRows.length} rows • {fileIntel.columnCount} columns)</span>
-                      </div>
-                      <span style={{ fontSize: "11px", color: "var(--orange-primary)", fontWeight: 700 }}>100% Real Autonomous Computation</span>
-                    </div>
-                  </label>
 
-                  {/* TAB 1: AUTONOMOUS INVESTIGATION TREE (KILLER FEATURE) */}
-                  {consoleTab === "investigation" && (
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                        <div>
-                          <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#fff" }}>Autonomous Root-Cause Investigation Tree</h4>
-                          <p style={{ fontSize: "12px", color: "#94a3b8" }}>Decomposes metrics and variances through hierarchical evidence graphs.</p>
+                <div>
+                  <div className="sidebar-section-title">AI INTELLIGENCE</div>
+                  <button className={`sidebar-nav-btn ${activeNav === 'insights' ? 'active' : ''}`} onClick={() => setActiveNav('insights')}>
+                    <Sparkles style={{ width: 15, height: 15 }} /> Insights & Hypotheses
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'investigations' ? 'active' : ''}`} onClick={() => setActiveNav('investigations')}>
+                    <GitBranch style={{ width: 15, height: 15 }} /> Root-Cause Trees
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'experiments' ? 'active' : ''}`} onClick={() => setActiveNav('experiments')}>
+                    <Activity style={{ width: 15, height: 15 }} /> Experiments
+                  </button>
+                </div>
+
+                <div>
+                  <div className="sidebar-section-title">MACHINE LEARNING</div>
+                  <button className={`sidebar-nav-btn ${activeNav === 'models' ? 'active' : ''}`} onClick={() => setActiveNav('models')}>
+                    <Cpu style={{ width: 15, height: 15 }} /> Candidate Models
+                  </button>
+                  <button className={`sidebar-nav-btn ${activeNav === 'predictions' ? 'active' : ''}`} onClick={() => setActiveNav('predictions')}>
+                    <Zap style={{ width: 15, height: 15 }} /> Live Predictions
+                  </button>
+                </div>
+
+                <div>
+                  <div className="sidebar-section-title">OUTPUT</div>
+                  <button className={`sidebar-nav-btn ${activeNav === 'reports' ? 'active' : ''}`} onClick={() => setActiveNav('reports')}>
+                    <FileText style={{ width: 15, height: 15 }} /> Code & Reports
+                  </button>
+                </div>
+              </div>
+
+              {/* ZONE 2: CENTER INFINITE 12-COLUMN CANVAS */}
+              <div className="studio-infinite-canvas">
+                {datasetRows.length === 0 ? (
+                  /* START FROM 0 BLANK STATE */
+                  <div style={{ background: "#0e0e13", border: "2px dashed rgba(255,77,0,0.4)", borderRadius: "20px", padding: "60px 40px", textAlign: "center", marginTop: "40px" }}>
+                    <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "rgba(255,77,0,0.12)", border: "1px solid rgba(255,77,0,0.3)", color: "var(--orange-primary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px auto" }}>
+                      <Upload style={{ width: 32, height: 32 }} />
+                    </div>
+                    <h3 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Start Studio Workspace From 0</h3>
+                    <p style={{ fontSize: "13px", color: "#94a3b8", maxWidth: "520px", margin: "0 auto 28px auto", lineHeight: 1.6 }}>
+                      Upload your raw CSV or JSON dataset to populate the infinite analytical grid, run autonomous file intelligence, root-cause investigation trees, and ML candidate pipelines.
+                    </p>
+
+                    <div style={{ display: "flex", justifyContent: "center", gap: "14px" }}>
+                      <label className="btn-orange-pill" style={{ padding: "12px 28px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                        <Upload style={{ width: 16, height: 16 }} />
+                        Browse & Upload Dataset
+                        <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: "none" }} />
+                      </label>
+
+                      <button className="nav-cta-btn" onClick={loadSampleDataset} style={{ padding: "12px 24px" }}>
+                        <Sparkles style={{ width: 14, height: 14, marginRight: 6, display: "inline-block" }} /> Load Demo Sample Dataset
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* POPULATED 12-COLUMN CANVAS GRID */
+                  <div className="studio-12col-grid">
+                    {/* CARD 1: DATASET INTELLIGENCE & QUALITY (4 COLS) */}
+                    <div className="grid-card-4 studio-card-panel">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <div style={{ fontSize: "11px", color: "#64748b", fontWeight: 800, textTransform: "uppercase" }}>DATASET INTELLIGENCE</div>
+                        <span style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80", padding: "2px 8px", borderRadius: "6px", fontSize: "10.5px", fontWeight: 700 }}>
+                          Quality: 100/100
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{fileName}</div>
+                      <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "16px" }}>{datasetRows.length} rows • {fileIntel.columnCount} columns</div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", background: "#09090d", padding: "12px", borderRadius: "10px" }}>
+                        <div><span style={{ color: "#64748b" }}>Numeric:</span> <strong style={{ color: "var(--orange-primary)" }}>{numericCols.length}</strong></div>
+                        <div><span style={{ color: "#64748b" }}>Categorical:</span> <strong style={{ color: "#38bdf8" }}>{categoricalCols.length}</strong></div>
+                        <div><span style={{ color: "#64748b" }}>Missing:</span> <strong style={{ color: "#4ade80" }}>0.0%</strong></div>
+                        <div><span style={{ color: "#64748b" }}>Primary Key:</span> <strong style={{ color: "#fff" }}>{fileIntel.primaryKeyCandidate || 'id'}</strong></div>
+                      </div>
+                    </div>
+
+                    {/* CARD 2: AUTONOMOUS ROOT-CAUSE TREE (8 COLS) */}
+                    <div className="grid-card-8 studio-card-panel">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <GitBranch style={{ width: 16, height: 16, color: "var(--orange-primary)" }} />
+                          <span style={{ fontSize: "14px", fontWeight: 800, color: "#fff" }}>Autonomous Root-Cause Investigation Tree</span>
                         </div>
-                        <span style={{ background: "rgba(255,77,0,0.15)", border: "1px solid rgba(255,77,0,0.3)", color: "var(--orange-primary)", padding: "4px 12px", borderRadius: "10px", fontWeight: 700, fontSize: "12px" }}>
+                        <span style={{ background: "rgba(255,77,0,0.15)", color: "var(--orange-primary)", padding: "2px 8px", borderRadius: "6px", fontSize: "10.5px", fontWeight: 700 }}>
                           Confidence: 94%
                         </span>
                       </div>
 
-                      {/* Investigation Graph Renderer */}
-                      <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "24px", borderRadius: "16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                          <GitBranch style={{ width: 18, height: 18, color: "var(--orange-primary)" }} />
-                          <span style={{ fontWeight: 800, fontSize: "14px", color: "#fff" }}>{investigationTree.label}</span>
-                          <span style={{ background: "rgba(255,255,255,0.08)", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", color: "#38bdf8", fontFamily: "var(--font-mono)" }}>
-                            {investigationTree.metricChange}
-                          </span>
-                        </div>
+                      <div style={{ background: "#09090d", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", borderRadius: "12px", fontSize: "12px" }}>
+                        <div style={{ fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{investigationTree.label} ({investigationTree.metricChange})</div>
+                        <div style={{ color: "#94a3b8", fontSize: "11.5px" }}>{investigationTree.evidence}</div>
 
-                        <div style={{ marginLeft: "20px", paddingLeft: "16px", borderLeft: "2px solid rgba(255,77,0,0.3)" }}>
-                          {investigationTree.children?.map((child) => (
-                            <div key={child.id} style={{ marginBottom: "20px" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                                <ChevronRight style={{ width: 14, height: 14, color: "var(--orange-primary)" }} />
-                                <span style={{ fontWeight: 700, fontSize: "13px", color: "#fff" }}>{child.label}</span>
-                                <span style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", padding: "2px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: 700 }}>
-                                  {child.metricChange}
-                                </span>
-                              </div>
-                              <div style={{ fontSize: "12px", color: "#94a3b8", marginLeft: "24px", marginBottom: "8px" }}>{child.evidence}</div>
-
-                              {child.children && (
-                                <div style={{ marginLeft: "24px", paddingLeft: "14px", borderLeft: "2px dashed rgba(255,255,255,0.1)" }}>
-                                  {child.children.map((subChild) => (
-                                    <div key={subChild.id} style={{ marginTop: "12px" }}>
-                                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        <Zap style={{ width: 13, height: 13, color: "#fbbf24" }} />
-                                        <span style={{ fontWeight: 700, fontSize: "12.5px", color: "#fff" }}>{subChild.label}</span>
-                                        <span style={{ background: "rgba(255,77,0,0.15)", color: "var(--orange-primary)", padding: "2px 6px", borderRadius: "4px", fontSize: "10.5px", fontWeight: 700 }}>
-                                          {subChild.metricChange}
-                                        </span>
-                                      </div>
-                                      <div style={{ fontSize: "11.5px", color: "#94a3b8", marginLeft: "20px", marginTop: "4px" }}>{subChild.evidence}</div>
-
-                                      {subChild.children?.map((deepNode) => (
-                                        <div key={deepNode.id} style={{ background: "#13131a", border: "1px solid rgba(255,77,0,0.3)", padding: "12px", borderRadius: "10px", marginTop: "10px", marginLeft: "20px" }}>
-                                          <div style={{ fontSize: "11px", color: "var(--orange-primary)", fontWeight: 700, textTransform: "uppercase" }}>ROOT CAUSE IDENTIFIED</div>
-                                          <div style={{ fontSize: "12.5px", fontWeight: 800, color: "#fff", marginTop: "2px" }}>{deepNode.label}</div>
-                                          <div style={{ fontSize: "11.5px", color: "#94a3b8", marginTop: "4px" }}>{deepNode.evidence}</div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 2: AUTONOMOUS ANALYSIS PLANNER */}
-                  {consoleTab === "plan" && (
-                    <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#fff", marginBottom: "14px" }}>Autonomous Analysis Plan & Information-Value Prioritization</h4>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        {analysisPlan.map((plan) => (
-                          <div key={plan.stepNumber} style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "16px", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                              <span style={{ background: "var(--orange-primary)", color: "#fff", width: "26px", height: "26px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "12px" }}>
-                                {plan.stepNumber}
-                              </span>
-                              <div>
-                                <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#fff" }}>{plan.title}</div>
-                                <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>{plan.description}</div>
-                              </div>
-                            </div>
-
-                            <div style={{ textAlign: "right" }}>
-                              <div style={{ fontSize: "11px", color: "#94a3b8" }}>INFO VALUE SCORE</div>
-                              <div style={{ fontSize: "16px", fontWeight: 800, color: "var(--orange-primary)" }}>{plan.informationValueScore}/100</div>
-                            </div>
+                        {investigationTree.children?.map((child) => (
+                          <div key={child.id} style={{ marginLeft: "14px", marginTop: "10px", paddingLeft: "12px", borderLeft: "2px solid var(--orange-primary)" }}>
+                            <div style={{ fontWeight: 700, color: "#f87171" }}>↳ {child.label} ({child.metricChange})</div>
+                            <div style={{ color: "#64748b", fontSize: "11px" }}>{child.evidence}</div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
 
-                  {/* TAB 3: DATA QUALITY AUTOPILOT */}
-                  {consoleTab === "quality" && (
-                    <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#fff", marginBottom: "14px" }}>Data Quality Autopilot & Reversible Transformations</h4>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                        {qualityIssues.map((issue) => (
-                          <div key={issue.id} style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "18px", borderRadius: "14px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <AlertCircle style={{ width: 16, height: 16, color: issue.severity === "high" ? "#ef4444" : "#fbbf24" }} />
-                                <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#fff" }}>{issue.description}</span>
-                              </div>
-                              <span style={{ background: "rgba(255,77,0,0.15)", color: "var(--orange-primary)", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 700 }}>
-                                Confidence: {(issue.recommendedTransformation.confidence * 100).toFixed(0)}%
-                              </span>
-                            </div>
-
-                            <div style={{ background: "#13131a", padding: "12px", borderRadius: "8px", fontSize: "12px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "10px" }}>
-                              <div><span style={{ color: "#94a3b8" }}>WHAT:</span> <div style={{ color: "#fff", fontWeight: 600 }}>{issue.recommendedTransformation.what}</div></div>
-                              <div><span style={{ color: "#94a3b8" }}>WHY:</span> <div style={{ color: "#fff", fontWeight: 600 }}>{issue.recommendedTransformation.why}</div></div>
-                              <div><span style={{ color: "#94a3b8" }}>IMPACT:</span> <div style={{ color: "#4ade80", fontWeight: 600 }}>{issue.recommendedTransformation.impact}</div></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 4: HYPOTHESES & STATISTICAL DISCOVERY */}
-                  {consoleTab === "hypotheses" && (
-                    <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#fff", marginBottom: "14px" }}>Automated Statistical Hypotheses & Effect Sizes</h4>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        {hypotheses.map((hyp) => (
-                          <div key={hyp.id} style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "18px", borderRadius: "14px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                              <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#fff" }}>{hyp.statement}</span>
-                              <span style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80", padding: "4px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
-                                Supported (p = {hyp.pValue})
-                              </span>
-                            </div>
-                            <div style={{ fontSize: "12px", color: "#94a3b8" }}>{hyp.evidenceSummary}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 5: RECHARTS VISUALIZATION SUITE */}
-                  {consoleTab === "visualizer" && (
-                    <div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-                        <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "16px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                            <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>Bivariate Scatter Plot</h4>
-                            <div style={{ display: "flex", gap: "6px" }}>
-                              <select value={scatterX} onChange={(e) => setScatterX(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "11px" }}>
-                                {numericCols.map((c) => (<option key={c} value={c}>X: {c}</option>))}
-                              </select>
-                              <select value={scatterY} onChange={(e) => setScatterY(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "11px" }}>
-                                {numericCols.map((c) => (<option key={c} value={c}>Y: {c}</option>))}
-                              </select>
-                            </div>
-                          </div>
-                          <div style={{ height: "200px" }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                              <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
-                                <XAxis dataKey="x" stroke="#94a3b8" fontSize={11} />
-                                <YAxis dataKey="y" stroke="#94a3b8" fontSize={11} />
-                                <Tooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", color: "#fff" }} />
-                                <Scatter data={datasetRows.map((r) => ({ x: Number(r[scatterX] ?? 0), y: Number(r[scatterY] ?? 0) }))} fill="#ff4d00" />
-                              </ScatterChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-
-                        <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "16px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                            <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>Distribution Histogram</h4>
-                            <select value={histCol} onChange={(e) => setHistCol(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "11px" }}>
-                              {numericCols.map((c) => (<option key={c} value={c}>{c}</option>))}
-                            </select>
-                          </div>
-                          <div style={{ height: "200px" }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={computeHistogram(datasetRows.map((r) => Number(r[histCol] ?? 0)))}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
-                                <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} />
-                                <YAxis stroke="#94a3b8" fontSize={11} />
-                                <Tooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", color: "#fff" }} />
-                                <Bar dataKey="count" fill="#38bdf8" radius={[4, 4, 0, 0]} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 6: ML TRAINING LAB */}
-                  {consoleTab === "ml" && (
-                    <div>
-                      <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "16px", marginBottom: "20px" }}>
-                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Fit Candidate ML Algorithms</h4>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                          <div>
-                            <label style={{ fontSize: "12px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Algorithm</label>
-                            <select value={selectedAlgorithm} onChange={(e) => setSelectedAlgorithm(e.target.value as any)} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "8px", borderRadius: "8px" }}>
-                              <option value="linear">OLS Linear Regression</option>
-                              <option value="logistic">Binary Logistic Regression</option>
-                              <option value="knn">KNN Classifier</option>
-                              <option value="kmeans">K-Means++ Clustering</option>
-                              <option value="decisionTree">Decision Tree Classifier</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "12px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Target (y)</label>
-                            <select value={selectedTarget} onChange={(e) => setSelectedTarget(e.target.value)} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "8px", borderRadius: "8px" }}>
-                              {columnTypes.map((c) => (<option key={c.name} value={c.name}>{c.name}</option>))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "12px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Features (X)</label>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                              {numericCols.map((feat) => (
-                                <button key={feat} onClick={() => setSelectedFeatures([feat])} style={{ background: selectedFeatures.includes(feat) ? "var(--orange-primary)" : "rgba(255,255,255,0.1)", color: "#fff", border: "none", padding: "4px 8px", borderRadius: "6px", fontSize: "11px" }}>
-                                  {feat}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <button className="btn-orange-pill" onClick={handleTrainModel} style={{ width: "100%", padding: "10px" }}>
-                          Fit Candidate Model Now
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 7: LIVE PREDICTIONS */}
-                  {consoleTab === "predictions" && (
-                    <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Live Prediction Studio</h4>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                        <div>
-                          {selectedFeatures.map((feat) => (
-                            <div key={feat} style={{ marginBottom: "12px" }}>
-                              <label style={{ fontSize: "12px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>{feat}</label>
-                              <input type="number" value={predictionInputs[feat] ?? 0} onChange={(e) => setPredictionInputs({ ...predictionInputs, [feat]: parseFloat(e.target.value) || 0 })} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "10px", borderRadius: "8px" }} />
-                            </div>
-                          ))}
-                          <button className="btn-orange-pill" onClick={handlePredict} style={{ width: "100%", padding: "10px" }}>Generate Prediction</button>
-                        </div>
-
-                        <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                          <div style={{ fontSize: "11px", color: "#94a3b8", textTransform: "uppercase" }}>PREDICTED OUTPUT</div>
-                          <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--orange-primary)", marginTop: "8px" }}>
-                            {predictionOutput !== null ? String(predictionOutput) : "Ready..."}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 8: REPRODUCIBLE CODE */}
-                  {consoleTab === "code" && (
-                    <div>
+                    {/* CARD 3: BIVARIATE SCATTER (6 COLS) */}
+                    <div className="grid-card-6 studio-card-panel">
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>Reproducible Python Script</h4>
-                        <button className="btn-orange-pill" style={{ padding: "6px 14px", fontSize: "12px" }} onClick={() => copyToClipboard(reproducibleCode)}>
-                          {copiedCode ? <><Check style={{ width: 14, height: 14 }} /> Copied</> : <><Copy style={{ width: 14, height: 14 }} /> Copy Python Code</>}
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Scatter Plot Analysis</span>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <select value={scatterX} onChange={(e) => setScatterX(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px", fontSize: "10.5px" }}>
+                            {numericCols.map((c) => (<option key={c} value={c}>X: {c}</option>))}
+                          </select>
+                          <select value={scatterY} onChange={(e) => setScatterY(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px", fontSize: "10.5px" }}>
+                            {numericCols.map((c) => (<option key={c} value={c}>Y: {c}</option>))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style={{ height: "180px" }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                            <XAxis dataKey="x" stroke="#94a3b8" fontSize={10} />
+                            <YAxis dataKey="y" stroke="#94a3b8" fontSize={10} />
+                            <Tooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", color: "#fff" }} />
+                            <Scatter data={datasetRows.map((r) => ({ x: Number(r[scatterX] ?? 0), y: Number(r[scatterY] ?? 0) }))} fill="#ff4d00" />
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* CARD 4: PEARSON CORRELATION MATRIX (6 COLS) */}
+                    <div className="grid-card-6 studio-card-panel">
+                      <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", display: "block", marginBottom: "12px" }}>Pearson Correlation Matrix</span>
+                      {corrData.cols.length > 0 ? (
+                        <div style={{ overflowX: "auto" }}>
+                          <table style={{ borderCollapse: "collapse", fontSize: "11px", fontFamily: "var(--font-mono)" }}>
+                            <thead>
+                              <tr>
+                                <th></th>
+                                {corrData.cols.map((col) => (
+                                  <th key={col} style={{ padding: "6px", color: "#38bdf8" }}>{col}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {corrData.cols.map((rowCol, rIdx) => (
+                                <tr key={rowCol}>
+                                  <td style={{ padding: "6px", fontWeight: 700, color: "#38bdf8" }}>{rowCol}</td>
+                                  {corrData.cols.map((col, cIdx) => {
+                                    const val = corrData.matrix[rIdx]?.[cIdx] ?? 0;
+                                    return (
+                                      <td key={col} style={{ padding: "8px", textAlign: "center", background: rIdx === cIdx ? "rgba(255,77,0,0.3)" : `rgba(34,197,94,${Math.abs(val) * 0.6})`, color: "#fff" }}>
+                                        {val.toFixed(2)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* CARD 5: ML CANDIDATE MODEL FITTING (8 COLS) */}
+                    <div className="grid-card-8 studio-card-panel">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <Cpu style={{ width: 16, height: 16, color: "var(--orange-primary)" }} />
+                          <span style={{ fontSize: "14px", fontWeight: 800, color: "#fff" }}>Candidate ML Pipeline & Model Fitting</span>
+                        </div>
+                        <button className="btn-orange-pill" onClick={handleTrainModel} style={{ padding: "6px 14px", fontSize: "11px" }}>
+                          Fit Candidate Model
                         </button>
                       </div>
-                      <pre style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "14px", fontFamily: "var(--font-mono)", fontSize: "12.5px", color: "#38bdf8", overflowX: "auto" }}>
-                        <code>{reproducibleCode}</code>
-                      </pre>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                        <div>
+                          <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "4px" }}>Algorithm</label>
+                          <select value={selectedAlgorithm} onChange={(e) => setSelectedAlgorithm(e.target.value as any)} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "6px", borderRadius: "6px", fontSize: "11px" }}>
+                            <option value="linear">OLS Linear Regression</option>
+                            <option value="logistic">Binary Logistic Regression</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "4px" }}>Target (y)</label>
+                          <select value={selectedTarget} onChange={(e) => setSelectedTarget(e.target.value)} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "6px", borderRadius: "6px", fontSize: "11px" }}>
+                            {columnTypes.map((c) => (<option key={c.name} value={c.name}>{c.name}</option>))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "4px" }}>Feature (X)</label>
+                          <select value={selectedFeatures[0] || ''} onChange={(e) => setSelectedFeatures([e.target.value])} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "6px", borderRadius: "6px", fontSize: "11px" }}>
+                            {numericCols.map((c) => (<option key={c} value={c}>{c}</option>))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {trainedLinearModel && (
+                        <div style={{ background: "#09090d", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>
+                          <div style={{ fontFamily: "var(--font-mono)", color: "#38bdf8", marginBottom: "6px" }}>{trainedLinearModel.equation}</div>
+                          <div style={{ display: "flex", gap: "16px" }}>
+                            <div><span style={{ color: "#64748b" }}>R²:</span> <strong>{trainedLinearModel.r2.toFixed(3)}</strong></div>
+                            <div><span style={{ color: "#64748b" }}>RMSE:</span> <strong>{trainedLinearModel.rmse.toFixed(2)}</strong></div>
+                            <div><span style={{ color: "#64748b" }}>MAE:</span> <strong>{trainedLinearModel.mae.toFixed(2)}</strong></div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
-              )}
+
+                    {/* CARD 6: LIVE PREDICTIONS (4 COLS) */}
+                    <div className="grid-card-4 studio-card-panel">
+                      <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", display: "block", marginBottom: "12px" }}>Live Inference Studio</span>
+                      {selectedFeatures.map((feat) => (
+                        <div key={feat} style={{ marginBottom: "10px" }}>
+                          <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>{feat}</label>
+                          <input type="number" value={predictionInputs[feat] ?? 0} onChange={(e) => setPredictionInputs({ ...predictionInputs, [feat]: parseFloat(e.target.value) || 0 })} style={{ width: "100%", background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "6px", borderRadius: "6px", fontSize: "11px" }} />
+                        </div>
+                      ))}
+                      <button className="btn-orange-pill" onClick={handlePredict} style={{ width: "100%", padding: "8px", fontSize: "11px", marginBottom: "12px" }}>Generate Inference</button>
+                      <div style={{ background: "#09090d", padding: "12px", borderRadius: "8px", textAlign: "center" }}>
+                        <div style={{ fontSize: "10px", color: "#64748b" }}>PREDICTED OUTPUT</div>
+                        <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--orange-primary)" }}>{predictionOutput !== null ? String(predictionOutput) : "Ready"}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ZONE 3: RIGHT COMMAND CENTER & AGENT STREAM (300px) */}
+              <div className="studio-command-center-right">
+                <div>
+                  <div style={{ fontSize: "10px", fontWeight: 800, color: "#64748b", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "12px" }}>
+                    COMMAND CENTER
+                  </div>
+
+                  <button
+                    onClick={() => setIsCmdModalOpen(true)}
+                    style={{ width: "100%", background: "#13131a", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", padding: "10px", borderRadius: "10px", textAlign: "left", fontSize: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: "20px" }}
+                  >
+                    <span style={{ color: "#94a3b8" }}>Ask Studio...</span>
+                    <span style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontFamily: "var(--font-mono)" }}>⌘K</span>
+                  </button>
+
+                  <div style={{ fontSize: "10px", fontWeight: 800, color: "#64748b", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "10px" }}>
+                    AUTONOMOUS AGENT STREAM
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "11.5px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "#4ade80" }} />
+                      <span>Profiling Data</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "#4ade80" }} />
+                      <span>Hypothesis Testing</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "#4ade80" }} />
+                      <span>Root-Cause Tree</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <Zap style={{ width: 14, height: 14, color: "var(--orange-primary)" }} />
+                      <span>Model Fitting</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ background: "#13131a", padding: "12px", borderRadius: "10px", fontSize: "11px" }}>
+                  <div style={{ color: "#94a3b8", marginBottom: "4px" }}>AUTONOMY LEVEL</div>
+                  <div style={{ color: "var(--orange-primary)", fontWeight: 700 }}>Level 3: Autonomous Analysis</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Command Bar */}
+            <div className="studio-bottom-bar">
+              <div>DATA · ANALYZE · PREDICT · INVESTIGATE · REPORT</div>
+              <div>Press <strong style={{ color: "#fff" }}>⌘K</strong> to activate AI Command Interface</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COMMAND CENTER OVERLAY MODAL (⌘K) */}
+      {isCmdModalOpen && (
+        <div className="cmd-modal-backdrop" onClick={() => setIsCmdModalOpen(false)}>
+          <div className="cmd-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+              <Command style={{ width: 18, height: 18, color: "var(--orange-primary)" }} />
+              <input
+                type="text"
+                autoFocus
+                placeholder="What do you want to investigate? (e.g. 'Why did revenue fall?')"
+                value={cmdQuery}
+                onChange={(e) => setCmdQuery(e.target.value)}
+                style={{ width: "100%", background: "transparent", border: "none", color: "#fff", fontSize: "15px", outline: "none" }}
+              />
+              <button onClick={() => setIsCmdModalOpen(false)} style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" }}>
+                <X style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: "10px" }}>SUGGESTED COMMANDS</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                "↗ Find anomalies in customer dataset",
+                "◉ Explain revenue decline root causes",
+                "◇ Build best predictive churn model",
+                "◎ Test statistical significance of sales vs score",
+                "▦ Generate Recharts visualization suite",
+              ].map((cmd, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setCmdQuery(cmd); setIsCmdModalOpen(false); }}
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", padding: "10px 14px", borderRadius: "8px", textStyle: "left", textAlign: "left", fontSize: "12.5px", cursor: "pointer" }}
+                >
+                  {cmd}
+                </button>
+              ))}
             </div>
           </div>
         </div>

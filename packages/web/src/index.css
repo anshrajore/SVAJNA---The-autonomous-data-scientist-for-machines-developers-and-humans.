@@ -1280,3 +1280,140 @@ html, body {
   .realtime-bento-layout { grid-template-columns: 1fr; }
   .footer-top-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* 3-Zone AI Operating System Layout for Studio */
+.studio-3zone-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  height: calc(100vh - 110px);
+  overflow: hidden;
+  background: #070709;
+}
+
+.studio-sidebar-left {
+  background: #09090d;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.sidebar-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted-light);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.sidebar-nav-btn.active {
+  background: rgba(255, 77, 0, 0.12);
+  border: 1px solid rgba(255, 77, 0, 0.3);
+  color: var(--orange-primary);
+}
+
+.studio-infinite-canvas {
+  background: #07070a;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  padding: 24px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.studio-12col-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+
+.grid-card-2 { grid-column: span 2; }
+.grid-card-4 { grid-column: span 4; }
+.grid-card-6 { grid-column: span 6; }
+.grid-card-8 { grid-column: span 8; }
+.grid-card-12 { grid-column: span 12; }
+
+.studio-card-panel {
+  background: #0e0e13;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease;
+}
+
+.studio-card-panel:hover {
+  border-color: rgba(255, 77, 0, 0.3);
+}
+
+.studio-command-center-right {
+  background: #09090d;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.cmd-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  padding-top: 100px;
+}
+
+.cmd-modal-box {
+  background: #0e0e13;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+}
+
+.studio-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #09090d;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 24px;
+  font-size: 11.5px;
+  color: #64748b;
+  font-family: var(--font-mono);
+}
+
