@@ -25,3 +25,24 @@ export function scaleStandard(rows: DataRow[], column: string): StandardScalerRe
 
   return { scaledRows, mean, stdDev };
 }
+
+/**
+ * Normalizes numerical columns using Robust Scaler (median and Interquartile Range).
+ */
+export function scaleRobust(rows: DataRow[], column: string): { scaledRows: DataRow[]; median: number; iqr: number } {
+  const nums = rows.map((r) => parseFloat(String(r[column]))).filter((v) => !isNaN(v)).sort((a, b) => a - b);
+  if (!nums.length) return { scaledRows: rows, median: 0, iqr: 1 };
+  const median = nums[Math.floor(nums.length / 2)]!;
+  const q25 = nums[Math.floor(nums.length * 0.25)]!;
+  const q75 = nums[Math.floor(nums.length * 0.75)]!;
+  const iqr = (q75 - q25) || 1;
+
+  const scaledRows = rows.map((r) => {
+    const val = parseFloat(String(r[column]));
+    if (isNaN(val)) return r;
+    return { ...r, [column]: (val - median) / iqr };
+  });
+
+  return { scaledRows, median, iqr };
+}
+
