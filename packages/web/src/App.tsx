@@ -65,6 +65,7 @@ import {
   Server,
   Workflow,
   Award,
+  Cloud,
 } from "lucide-react";
 
 import {
@@ -91,6 +92,14 @@ import { executeVisualizationQuery, VisualizationSpec } from "./engines/visualiz
 import { runAutoMlExperiment, AutoMlExperimentResult } from "./engines/automl-studio";
 import { evaluateSystemMonitoring, SystemMonitoringSnapshot } from "./engines/monitoring-engine";
 
+// Supabase Cloud Backend
+import { SupabaseModal } from "./components/SupabaseModal";
+import {
+  testSupabaseConnection,
+  saveDatasetToSupabase,
+  savePipelineRunToSupabase,
+} from "./services/supabase-client";
+
 // 12-Stage Autonomous Pipeline
 import { PipelineWorkspace } from "./components/PipelineWorkspace";
 import { PipelineState, createInitialPipelineState, executePipelineStage } from "./engines/pipeline-engine";
@@ -114,6 +123,40 @@ export const App: React.FC = () => {
   const [osTab, setOsTab] = useState<"mac" | "linux" | "win" | "docker">("mac");
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [autonomyLevel, setAutonomyLevel] = useState<number>(3);
+
+  // Supabase Cloud State
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState<boolean>(false);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(false);
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+  const [cloudSyncMsg, setCloudSyncMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    testSupabaseConnection().then((res) => {
+      setIsSupabaseConnected(res.success);
+    });
+  }, []);
+
+  const syncCurrentToSupabase = async () => {
+    if (!datasetRows.length) {
+      alert("No active dataset loaded to sync.");
+      return;
+    }
+    setIsSyncingCloud(true);
+    setCloudSyncMsg("Syncing dataset & pipeline to Supabase...");
+    const datasetRes = await saveDatasetToSupabase(fileName, datasetRows, numericCols, categoricalCols, mlTarget);
+    let pipelineRes = { success: true };
+    if (pipelineState.rawRows.length > 0) {
+      pipelineRes = await savePipelineRunToSupabase(pipelineState);
+    }
+    setIsSyncingCloud(false);
+    if (datasetRes.success && pipelineRes.success) {
+      setCloudSyncMsg("Successfully replicated to Supabase Cloud!");
+      setTimeout(() => setCloudSyncMsg(null), 3500);
+    } else {
+      setCloudSyncMsg(datasetRes.error || "Failed to sync to Supabase.");
+      setTimeout(() => setCloudSyncMsg(null), 4000);
+    }
+  };
 
   // Left Sidebar Navigation within Workspace
   const [activeNav, setActiveNav] = useState<
@@ -432,6 +475,37 @@ export const App: React.FC = () => {
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button
+                onClick={() => setIsSupabaseModalOpen(true)}
+                style={{
+                  background: isSupabaseConnected ? "rgba(62,207,142,0.12)" : "rgba(255,255,255,0.06)",
+                  border: isSupabaseConnected ? "1px solid rgba(62,207,142,0.3)" : "1px solid rgba(255,255,255,0.15)",
+                  color: isSupabaseConnected ? "#3ecf8e" : "#e2e8f0",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "11.5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  transition: "all 0.2s ease",
+                }}
+                title={isSupabaseConnected ? "Supabase Cloud Connected" : "Connect Supabase Cloud Backend"}
+              >
+                <Cloud style={{ width: 13, height: 13, color: isSupabaseConnected ? "#3ecf8e" : "var(--orange-primary)" }} />
+                <span>{isSupabaseConnected ? "Supabase Live" : "Connect Cloud"}</span>
+                <span
+                  style={{
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "50%",
+                    background: isSupabaseConnected ? "#3ecf8e" : "#facc15",
+                    boxShadow: isSupabaseConnected ? "0 0 6px #3ecf8e" : "0 0 6px #facc15",
+                  }}
+                />
+              </button>
+
+              <button
                 onClick={() => setIsCmdModalOpen(true)}
                 style={{ background: "#13131a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", padding: "6px 12px", borderRadius: "8px", fontSize: "11.5px", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
               >
@@ -698,13 +772,35 @@ export const App: React.FC = () => {
             ) : (
               <div>
                 {/* Active Dataset Status Bar */}
-                <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "10px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div style={{ background: "#0e0e13", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "10px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <Database style={{ width: 16, height: 16, color: "var(--orange-primary)" }} />
                     <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Active: {fileName}</span>
                     <span style={{ fontSize: "11px", color: "#94a3b8" }}>({datasetRows.length} rows &bull; {fileIntel.columnCount} columns)</span>
                   </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
+                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <button
+                      onClick={syncCurrentToSupabase}
+                      disabled={isSyncingCloud}
+                      style={{
+                        background: "rgba(62,207,142,0.1)",
+                        border: "1px solid rgba(62,207,142,0.3)",
+                        color: "#3ecf8e",
+                        padding: "5px 12px",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontWeight: 600,
+                      }}
+                      title="Sync current dataset & pipeline to Supabase Cloud"
+                    >
+                      <Cloud style={{ width: 13, height: 13 }} />
+                      {isSyncingCloud ? "Syncing..." : "Sync to Supabase"}
+                    </button>
+
                     <label style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "4px 12px", borderRadius: "6px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
                       <Upload style={{ width: 12, height: 12 }} /> Swap Dataset
                       <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: "none" }} />
@@ -714,6 +810,26 @@ export const App: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {cloudSyncMsg && (
+                  <div
+                    style={{
+                      background: "rgba(62,207,142,0.12)",
+                      border: "1px solid rgba(62,207,142,0.3)",
+                      borderRadius: "8px",
+                      padding: "8px 14px",
+                      marginBottom: "16px",
+                      fontSize: "11.5px",
+                      color: "#3ecf8e",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <CheckCircle2 style={{ width: 14, height: 14 }} />
+                    {cloudSyncMsg}
+                  </div>
+                )}
 
                 {/* OVERVIEW 12-COLUMN GRID */}
                 {activeNav === "overview" && (
@@ -1188,6 +1304,8 @@ export const App: React.FC = () => {
             setPipelineState={setPipelineState}
             onLoadBenchmark={loadBenchmark}
             onFileUpload={handleFileUpload}
+            isSupabaseConnected={isSupabaseConnected}
+            onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
           />
         </div>
       )}
@@ -1463,6 +1581,13 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* SUPABASE CONNECTION MODAL */}
+      <SupabaseModal
+        isOpen={isSupabaseModalOpen}
+        onClose={() => setIsSupabaseModalOpen(false)}
+        onConnectionStatusChange={(connected) => setIsSupabaseConnected(connected)}
+      />
 
       {/* FOOTER */}
       <footer className="vibrant-orange-footer" style={{ marginTop: "40px" }}>

@@ -37,6 +37,7 @@ import {
   Check,
   TrendingUp,
   FileSpreadsheet,
+  Cloud,
 } from "lucide-react";
 
 import {
@@ -47,12 +48,18 @@ import {
 } from "../engines/pipeline-engine";
 import { downloadFile, parseBrowserCsv } from "../utils/browser-analysis";
 import { CURATED_BENCHMARKS, BenchmarkKey } from "../utils/benchmark-data";
+import {
+  savePipelineRunToSupabase,
+  fetchDatasetsFromSupabase,
+} from "../services/supabase-client";
 
 interface PipelineWorkspaceProps {
   pipelineState: PipelineState;
   setPipelineState: React.Dispatch<React.SetStateAction<PipelineState>>;
   onLoadBenchmark?: (key: BenchmarkKey) => void;
   onFileUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isSupabaseConnected?: boolean;
+  onOpenSupabaseModal?: () => void;
 }
 
 export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
@@ -60,6 +67,8 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
   setPipelineState,
   onLoadBenchmark,
   onFileUpload,
+  isSupabaseConnected = false,
+  onOpenSupabaseModal,
 }) => {
   const [selectedStage, setSelectedStage] = useState<StageId>("ingest");
   const [operatingMode, setOperatingMode] = useState<"guided" | "autonomous">("guided");
@@ -67,6 +76,10 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
   const [whatIfPrediction, setWhatIfPrediction] = useState<string | number | null>(null);
   const [vizXAxis, setVizXAxis] = useState<string>("");
   const [vizYAxis, setVizYAxis] = useState<string>("");
+  const [isSyncingPipeline, setIsSyncingPipeline] = useState<boolean>(false);
+  const [pipelineSyncMsg, setPipelineSyncMsg] = useState<string | null>(null);
+  const [cloudDatasets, setCloudDatasets] = useState<Array<any>>([]);
+  const [showCloudPicker, setShowCloudPicker] = useState<boolean>(false);
 
   const stageKeys: StageId[] = [
     "ingest",
@@ -162,6 +175,42 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
       setWhatIfPrediction(Math.round(val * 100) / 100);
     } else {
       setWhatIfPrediction("Low Risk / Normal (Confidence: 94.2%)");
+    }
+  };
+
+  const handleFetchCloudDatasets = async () => {
+    const res = await fetchDatasetsFromSupabase();
+    if (res.success && res.datasets.length > 0) {
+      setCloudDatasets(res.datasets);
+      setShowCloudPicker(true);
+    } else {
+      alert(res.error || "No datasets found in Supabase svajna_datasets table.");
+    }
+  };
+
+  const handleSelectCloudDataset = (ds: any) => {
+    if (ds.raw_data && ds.raw_data.length > 0) {
+      setPipelineState((prev) =>
+        executePipelineStage(prev, "ingest", {
+          rows: ds.raw_data,
+          name: ds.name || "cloud_dataset.csv",
+        })
+      );
+      setShowCloudPicker(false);
+    }
+  };
+
+  const handleSyncRunToSupabase = async () => {
+    setIsSyncingPipeline(true);
+    setPipelineSyncMsg("Replicating pipeline execution run to Supabase...");
+    const res = await savePipelineRunToSupabase(pipelineState);
+    setIsSyncingPipeline(false);
+    if (res.success) {
+      setPipelineSyncMsg("Successfully saved run to Supabase svajna_pipeline_runs!");
+      setTimeout(() => setPipelineSyncMsg(null), 3500);
+    } else {
+      setPipelineSyncMsg(res.error || "Failed to replicate to Supabase.");
+      setTimeout(() => setPipelineSyncMsg(null), 4000);
     }
   };
 
@@ -345,6 +394,37 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
                 style={{ padding: "8px 16px", fontSize: "12px" }}
               >
                 <Play style={{ width: 13, height: 13 }} /> Run Full Pipeline
+              </button>
+            )}
+
+            {onOpenSupabaseModal && (
+              <button
+                onClick={onOpenSupabaseModal}
+                style={{
+                  background: isSupabaseConnected ? "rgba(62,207,142,0.12)" : "rgba(255,255,255,0.06)",
+                  border: isSupabaseConnected ? "1px solid rgba(62,207,142,0.3)" : "1px solid rgba(255,255,255,0.12)",
+                  color: isSupabaseConnected ? "#3ecf8e" : "#e2e8f0",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                <Cloud style={{ width: 13, height: 13, color: isSupabaseConnected ? "#3ecf8e" : "var(--orange-primary)" }} />
+                <span>{isSupabaseConnected ? "Supabase Live" : "Connect Supabase"}</span>
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: isSupabaseConnected ? "#3ecf8e" : "#facc15",
+                    boxShadow: isSupabaseConnected ? "0 0 6px #3ecf8e" : "0 0 6px #facc15",
+                  }}
+                />
               </button>
             )}
           </div>
@@ -559,7 +639,7 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
                   </button>
                 </div>
 
-                <div>
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                   <label
                     className="btn-orange-pill"
                     style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 18px", fontSize: "12px" }}
@@ -572,7 +652,46 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
                       style={{ display: "none" }}
                     />
                   </label>
+
+                  {isSupabaseConnected && (
+                    <button
+                      className="nav-cta-btn"
+                      onClick={handleFetchCloudDatasets}
+                      style={{ fontSize: "12px", padding: "8px 16px", borderColor: "rgba(62,207,142,0.4)", color: "#3ecf8e", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                    >
+                      <Cloud style={{ width: 14, height: 14 }} /> Fetch Cloud Datasets
+                    </button>
+                  )}
                 </div>
+
+                {showCloudPicker && cloudDatasets.length > 0 && (
+                  <div style={{ marginTop: "16px", background: "#111116", border: "1px solid rgba(62,207,142,0.3)", borderRadius: "10px", padding: "14px", textAlign: "left" }}>
+                    <div style={{ fontSize: "12px", fontWeight: 700, color: "#3ecf8e", marginBottom: "8px" }}>
+                      Select a Cloud Dataset from Supabase:
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      {cloudDatasets.map((ds) => (
+                        <div
+                          key={ds.id}
+                          onClick={() => handleSelectCloudDataset(ds)}
+                          style={{
+                            background: "#09090d",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: "11.5px",
+                          }}
+                        >
+                          <span style={{ color: "#fff", fontWeight: 600 }}>{ds.name}</span>
+                          <span style={{ color: "#94a3b8" }}>{ds.row_count} rows &bull; {ds.column_count} cols</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
@@ -1203,8 +1322,48 @@ export const PipelineWorkspace: React.FC<PipelineWorkspaceProps> = ({
                     >
                       <Download style={{ width: 13, height: 13 }} /> Download .HTML
                     </button>
+
+                    {isSupabaseConnected && (
+                      <button
+                        className="nav-cta-btn"
+                        onClick={handleSyncRunToSupabase}
+                        disabled={isSyncingPipeline}
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: "11px",
+                          borderColor: "rgba(62,207,142,0.4)",
+                          color: "#3ecf8e",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <Cloud style={{ width: 13, height: 13 }} />
+                        {isSyncingPipeline ? "Replicating..." : "Replicate to Supabase"}
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                {pipelineSyncMsg && (
+                  <div
+                    style={{
+                      background: "rgba(62,207,142,0.1)",
+                      border: "1px solid rgba(62,207,142,0.3)",
+                      borderRadius: "8px",
+                      padding: "10px 14px",
+                      marginBottom: "12px",
+                      fontSize: "11.5px",
+                      color: "#3ecf8e",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <CheckCircle2 style={{ width: 14, height: 14 }} />
+                    {pipelineSyncMsg}
+                  </div>
+                )}
 
                 <div style={{ background: "#09090d", padding: "16px", borderRadius: "10px", fontSize: "12px" }}>
                   <div style={{ fontWeight: 800, color: "var(--orange-primary)", fontSize: "15px", marginBottom: "4px" }}>
