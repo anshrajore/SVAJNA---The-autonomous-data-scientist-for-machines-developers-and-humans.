@@ -16,14 +16,17 @@ let cachedClient: SupabaseClient | null = null;
 let lastConfigUrl = "";
 let lastConfigKey = "";
 
+const DEFAULT_SUPABASE_URL = "https://vwnjmqsydwtphroswwxo.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_pK2XmNssquAfzgqjStwlew_khbpMSH9";
+
 export interface SupabaseConfig {
   url: string;
   anonKey: string;
-  source: "env" | "local_storage" | "none";
+  source: "env" | "local_storage" | "default" | "none";
 }
 
 /**
- * Resolves current Supabase configuration from environment variables or localStorage
+ * Resolves current Supabase configuration from environment variables, localStorage, or verified defaults
  */
 export function getSupabaseConfig(): SupabaseConfig {
   const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || "";
@@ -41,6 +44,11 @@ export function getSupabaseConfig(): SupabaseConfig {
     }
   } catch {
     // Ignore localStorage errors (e.g. private mode)
+  }
+
+  // Fallback to verified active Supabase instance
+  if (DEFAULT_SUPABASE_URL && DEFAULT_SUPABASE_ANON_KEY) {
+    return { url: DEFAULT_SUPABASE_URL, anonKey: DEFAULT_SUPABASE_ANON_KEY, source: "default" };
   }
 
   return { url: "", anonKey: "", source: "none" };
@@ -130,7 +138,7 @@ export async function testSupabaseConnection(): Promise<{
 
     if (error) {
       // Table might not exist yet if schema hasn't run, but auth ping was received
-      if (error.code === "42P01") {
+      if (error.code === "42P01" || error.code === "PGRST205") {
         return {
           success: true,
           latencyMs,
