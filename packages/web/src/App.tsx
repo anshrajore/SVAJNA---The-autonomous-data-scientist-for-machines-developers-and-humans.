@@ -103,6 +103,7 @@ import {
 // 12-Stage Autonomous Pipeline
 import { PipelineWorkspace } from "./components/PipelineWorkspace";
 import { ExecutiveDashboard } from "./components/ExecutiveDashboard";
+import { GeographicMapStudio } from "./components/GeographicMapStudio";
 import { PipelineState, createInitialPipelineState, executePipelineStage } from "./engines/pipeline-engine";
 import { CURATED_BENCHMARKS, BenchmarkKey } from "./utils/benchmark-data";
 
@@ -857,6 +858,7 @@ export const App: React.FC = () => {
                     columnTypes={columnTypes}
                     onNavigateToPipeline={() => setCurrentPage("pipeline")}
                     onNavigateToAutoML={() => setCurrentPage("model_studio")}
+                    onNavigateToGeo={() => setActiveNav("geo")}
                     onSyncToSupabase={syncCurrentToSupabase}
                     isSupabaseConnected={isSupabaseConnected}
                     onExportCsv={() => {
@@ -1054,48 +1056,12 @@ export const App: React.FC = () => {
 
                 {/* VIEW: GEOGRAPHIC MAP */}
                 {activeNav === "geo" && (
-                  <div className="studio-card-panel">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                      <div>
-                        <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#fff" }}>Geographic Spatial Mapping</h4>
-                        <p style={{ fontSize: "12px", color: "#94a3b8" }}>Aggregates observations across global coordinate hubs.</p>
-                      </div>
-                      <span style={{ background: "rgba(255,77,0,0.15)", color: "var(--orange-primary)", padding: "4px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
-                        {geoData.length} Geographic Clusters
-                      </span>
-                    </div>
-
-                    <svg className="geo-map-svg" viewBox="0 0 800 320">
-                      <line x1="0" y1="160" x2="800" y2="160" stroke="rgba(255,255,255,0.08)" strokeDasharray="4 4" />
-                      <line x1="400" y1="0" x2="400" y2="320" stroke="rgba(255,255,255,0.08)" strokeDasharray="4 4" />
-                      <circle cx="400" cy="160" r="140" fill="none" stroke="rgba(255,255,255,0.04)" />
-                      {geoData.map((g) => {
-                        const x = 400 + (g.coordinates[1] / 180) * 360;
-                        const y = 160 - (g.coordinates[0] / 90) * 120;
-                        return (
-                          <g key={g.region} className="map-region-pin">
-                            <circle cx={x} cy={y} r={16 + (g.sharePercentage / 100) * 18} fill="rgba(255, 77, 0, 0.18)" />
-                            <circle cx={x} cy={y} r={6} fill="#ff4d00" stroke="#fff" strokeWidth={1.5} />
-                            <text x={x + 12} y={y + 4} fill="#e2e8f0" fontSize={11} fontWeight={700} fontFamily="sans-serif">
-                              {g.region} (${g.aggregatedMetric.toLocaleString()})
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginTop: "16px" }}>
-                      {geoData.map((g) => (
-                        <div key={g.region} style={{ background: "#09090d", border: "1px solid rgba(255,255,255,0.08)", padding: "12px", borderRadius: "10px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                            <span style={{ fontWeight: 700, color: "#fff" }}>{g.region}</span>
-                            <span style={{ color: "var(--orange-primary)", fontWeight: 700 }}>{g.sharePercentage}%</span>
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#64748b" }}>Coordinates: [{g.coordinates.join(", ")}]</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <GeographicMapStudio
+                    rows={datasetRows}
+                    fileName={fileName}
+                    numericCols={numericCols}
+                    categoricalCols={categoricalCols}
+                  />
                 )}
 
                 {/* VIEW: REPORTS */}

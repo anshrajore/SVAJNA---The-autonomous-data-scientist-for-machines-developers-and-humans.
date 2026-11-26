@@ -44,6 +44,7 @@ import {
   Cpu,
   Cloud,
   FileSpreadsheet,
+  Globe,
 } from "lucide-react";
 
 interface ExecutiveDashboardProps {
@@ -54,6 +55,7 @@ interface ExecutiveDashboardProps {
   columnTypes: Array<{ name: string; type: string }>;
   onNavigateToPipeline: () => void;
   onNavigateToAutoML: () => void;
+  onNavigateToGeo?: () => void;
   onSyncToSupabase: () => void;
   isSupabaseConnected?: boolean;
   onExportCsv: () => void;
@@ -79,6 +81,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   columnTypes,
   onNavigateToPipeline,
   onNavigateToAutoML,
+  onNavigateToGeo,
   onSyncToSupabase,
   isSupabaseConnected = false,
   onExportCsv,
@@ -342,6 +345,16 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             >
               <Cpu style={{ width: 13, height: 13, color: "var(--orange-primary)" }} /> Model Studio
             </button>
+
+            {onNavigateToGeo && (
+              <button
+                onClick={onNavigateToGeo}
+                className="nav-cta-btn"
+                style={{ padding: "8px 16px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <Globe style={{ width: 13, height: 13, color: "#38bdf8" }} /> Geographic Map
+              </button>
+            )}
 
             <button
               onClick={onSyncToSupabase}
