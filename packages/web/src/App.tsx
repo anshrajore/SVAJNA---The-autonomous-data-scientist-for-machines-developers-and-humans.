@@ -102,6 +102,7 @@ import {
 
 // 12-Stage Autonomous Pipeline
 import { PipelineWorkspace } from "./components/PipelineWorkspace";
+import { ExecutiveDashboard } from "./components/ExecutiveDashboard";
 import { PipelineState, createInitialPipelineState, executePipelineStage } from "./engines/pipeline-engine";
 import { CURATED_BENCHMARKS, BenchmarkKey } from "./utils/benchmark-data";
 
@@ -287,6 +288,8 @@ export const App: React.FC = () => {
     autoSetDefaults(data);
     setShowPasteBox(false);
     setPipelineState((prev) => executePipelineStage(prev, "ingest", { rows: data, name }));
+    setCurrentPage("workspace");
+    setActiveNav("overview");
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -304,6 +307,8 @@ export const App: React.FC = () => {
             setDatasetRows(parsed);
             autoSetDefaults(parsed);
             setPipelineState((prev) => executePipelineStage(prev, "ingest", { rows: parsed, name: file.name }));
+            setCurrentPage("workspace");
+            setActiveNav("overview");
           }
         } catch {
           alert("Invalid JSON format.");
@@ -314,6 +319,8 @@ export const App: React.FC = () => {
           setDatasetRows(rows);
           autoSetDefaults(rows);
           setPipelineState((prev) => executePipelineStage(prev, "ingest", { rows, name: file.name }));
+          setCurrentPage("workspace");
+          setActiveNav("overview");
         } else {
           alert("Unable to parse CSV data.");
         }
@@ -333,6 +340,8 @@ export const App: React.FC = () => {
           autoSetDefaults(parsed);
           setShowPasteBox(false);
           setPipelineState((prev) => executePipelineStage(prev, "ingest", { rows: parsed, name: "pasted_dataset.json" }));
+          setCurrentPage("workspace");
+          setActiveNav("overview");
           return;
         }
       }
@@ -343,6 +352,8 @@ export const App: React.FC = () => {
         autoSetDefaults(rows);
         setShowPasteBox(false);
         setPipelineState((prev) => executePipelineStage(prev, "ingest", { rows, name: "pasted_dataset.csv" }));
+        setCurrentPage("workspace");
+        setActiveNav("overview");
       } else {
         alert("Could not detect tabular rows in pasted text.");
       }
@@ -547,10 +558,15 @@ export const App: React.FC = () => {
                   </p>
 
                   <div className="hero-actions">
-                    <button className="btn-orange-pill" onClick={() => setCurrentPage("pipeline")}>
-                      Interactive 12-Stage Pipeline
+                    <label className="btn-orange-pill" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Upload style={{ width: 16, height: 16 }} />
+                      Upload CSV &amp; Launch Dashboard
+                      <input type="file" accept=".csv,.tsv,.json" onChange={handleFileUpload} style={{ display: "none" }} />
+                    </label>
+                    <button className="nav-cta-btn" onClick={() => setCurrentPage("pipeline")} style={{ padding: "12px 22px" }}>
+                      12-Stage Pipeline
                     </button>
-                    <button className="btn-circle-arrow" onClick={() => { loadBenchmark("sales"); setCurrentPage("pipeline"); }}>
+                    <button className="btn-circle-arrow" onClick={() => { loadBenchmark("sales"); setCurrentPage("pipeline"); }} title="Load Sales Benchmark into Pipeline">
                       <ArrowUpRight style={{ width: 18, height: 18 }} />
                     </button>
                     <button className="nav-cta-btn" onClick={() => setCurrentPage("workspace")} style={{ padding: "12px 22px" }}>
@@ -831,105 +847,27 @@ export const App: React.FC = () => {
                   </div>
                 )}
 
-                {/* OVERVIEW 12-COLUMN GRID */}
+                {/* OVERVIEW: SVAJNA EXECUTIVE AUTONOMOUS BI DASHBOARD */}
                 {activeNav === "overview" && (
-                  <div className="studio-12col-grid">
-                    {/* DATASET KPI PROFILE (4 cols) */}
-                    <div className="grid-card-4 studio-card-panel">
-                      <div style={{ fontSize: "11px", color: "#64748b", fontWeight: 800, textTransform: "uppercase", marginBottom: "8px" }}>DATASET PROFILE</div>
-                      <div style={{ fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{fileName}</div>
-                      <div style={{ fontSize: "11.5px", color: "#94a3b8", marginBottom: "14px" }}>Quality Score: <strong style={{ color: "#4ade80" }}>100/100</strong></div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", background: "#09090d", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>
-                        <div><span style={{ color: "#64748b" }}>Numeric:</span> <strong style={{ color: "var(--orange-primary)" }}>{numericCols.length}</strong></div>
-                        <div><span style={{ color: "#64748b" }}>Categorical:</span> <strong style={{ color: "#38bdf8" }}>{categoricalCols.length}</strong></div>
-                        <div><span style={{ color: "#64748b" }}>Primary Key:</span> <strong style={{ color: "#fff" }}>{fileIntel.primaryKeyCandidate || "id"}</strong></div>
-                        <div><span style={{ color: "#64748b" }}>Target Var:</span> <strong style={{ color: "#fbbf24" }}>{fileIntel.potentialTargets[0]?.name || "N/A"}</strong></div>
-                      </div>
-                    </div>
-
-                    {/* ROOT-CAUSE TREE (8 cols) */}
-                    <div className="grid-card-8 studio-card-panel">
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <GitBranch style={{ width: 16, height: 16, color: "var(--orange-primary)" }} />
-                          <span style={{ fontSize: "13.5px", fontWeight: 800, color: "#fff" }}>Autonomous Root-Cause Investigation Tree</span>
-                        </div>
-                        <span style={{ background: "rgba(255,77,0,0.15)", color: "var(--orange-primary)", padding: "2px 8px", borderRadius: "6px", fontSize: "10.5px", fontWeight: 700 }}>
-                          94% Confidence
-                        </span>
-                      </div>
-                      <div style={{ background: "#09090d", padding: "14px", borderRadius: "10px", fontSize: "12px" }}>
-                        <div style={{ fontWeight: 800, color: "#fff" }}>{investigationTree.label} ({investigationTree.metricChange})</div>
-                        <div style={{ color: "#94a3b8", fontSize: "11px", marginBottom: "8px" }}>{investigationTree.evidence}</div>
-                        {investigationTree.children?.slice(0, 1).map((c) => (
-                          <div key={c.id} style={{ paddingLeft: "10px", borderLeft: "2px solid var(--orange-primary)" }}>
-                            <div style={{ color: "#f87171", fontWeight: 700 }}>↳ {c.label} ({c.metricChange})</div>
-                            <div style={{ color: "#64748b", fontSize: "11px" }}>{c.evidence}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* SCATTER PLOT (6 cols) */}
-                    <div className="grid-card-6 studio-card-panel">
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Bivariate Regression Scatter</span>
-                        <div style={{ display: "flex", gap: "6px" }}>
-                          <select value={scatterX} onChange={(e) => setScatterX(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px", fontSize: "10.5px" }}>
-                            {numericCols.map((c) => (<option key={c} value={c}>X: {c}</option>))}
-                          </select>
-                          <select value={scatterY} onChange={(e) => setScatterY(e.target.value)} style={{ background: "#1b1b22", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px", fontSize: "10.5px" }}>
-                            {numericCols.map((c) => (<option key={c} value={c}>Y: {c}</option>))}
-                          </select>
-                        </div>
-                      </div>
-                      <div style={{ height: "180px" }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                            <XAxis dataKey="x" stroke="#94a3b8" fontSize={10} />
-                            <YAxis dataKey="y" stroke="#94a3b8" fontSize={10} />
-                            <Tooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", color: "#fff" }} />
-                            <Scatter data={datasetRows.map((r) => ({ x: Number(r[scatterX] ?? 0), y: Number(r[scatterY] ?? 0) }))} fill="var(--orange-primary)" />
-                          </ScatterChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* CORRELATION MATRIX (6 cols) */}
-                    <div className="grid-card-6 studio-card-panel">
-                      <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", display: "block", marginBottom: "10px" }}>Pearson Correlation Matrix</span>
-                      {corrData.cols.length > 0 ? (
-                        <div style={{ overflowX: "auto" }}>
-                          <table style={{ borderCollapse: "collapse", fontSize: "11px", fontFamily: "var(--font-mono)" }}>
-                            <thead>
-                              <tr>
-                                <th></th>
-                                {corrData.cols.map((col) => (
-                                  <th key={col} style={{ padding: "6px", color: "#38bdf8" }}>{col}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {corrData.cols.map((rowCol, rIdx) => (
-                                <tr key={rowCol}>
-                                  <td style={{ padding: "6px", fontWeight: 700, color: "#38bdf8" }}>{rowCol}</td>
-                                  {corrData.cols.map((col, cIdx) => {
-                                    const val = corrData.matrix[rIdx]?.[cIdx] ?? 0;
-                                    return (
-                                      <td key={col} style={{ padding: "8px", textAlign: "center", background: rIdx === cIdx ? "rgba(255,77,0,0.3)" : `rgba(34,197,94,${Math.abs(val) * 0.6})`, color: "#fff" }}>
-                                        {val.toFixed(2)}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
+                  <ExecutiveDashboard
+                    fileName={fileName}
+                    rows={datasetRows}
+                    numericCols={numericCols}
+                    categoricalCols={categoricalCols}
+                    columnTypes={columnTypes}
+                    onNavigateToPipeline={() => setCurrentPage("pipeline")}
+                    onNavigateToAutoML={() => setCurrentPage("model_studio")}
+                    onSyncToSupabase={syncCurrentToSupabase}
+                    isSupabaseConnected={isSupabaseConnected}
+                    onExportCsv={() => {
+                      const csv = exportAsCsv(datasetRows);
+                      downloadFile(csv, `${fileName.replace(/\.[^/.]+$/, "")}_export.csv`, "text/csv");
+                    }}
+                    onExportJson={() => {
+                      const json = exportAsJson(datasetRows);
+                      downloadFile(json, `${fileName.replace(/\.[^/.]+$/, "")}_export.json`, "application/json");
+                    }}
+                  />
                 )}
 
                 {/* VIEW: DATASETS (INTERACTIVE TABLE) */}
