@@ -1,10 +1,28 @@
 {
   "name": "@svajna/core",
   "version": "0.1.0",
+  "description": "SVAJNA Autonomous Data Science Operating System — Core Mathematical and Analytical Engine",
+  "author": "Ansh Rajore",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anshrajore/SVAJNA---The-autonomous-data-scientist-for-machines-developers-and-humans..git"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/**/*.test.js",

@@ -1,8 +1,23 @@
 {
   "name": "@svajna/mcp",
   "version": "0.1.0",
+  "description": "SVAJNA Model Context Protocol (MCP) Server for Autonomous Data Science",
+  "author": "Ansh Rajore",
+  "license": "Apache-2.0",
   "type": "module",
-  "bin": { "svajna-mcp": "./dist/index.js" },
+  "bin": {
+    "svajna-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anshrajore/SVAJNA---The-autonomous-data-scientist-for-machines-developers-and-humans..git"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build",
